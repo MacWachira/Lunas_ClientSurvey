@@ -928,29 +928,31 @@
                         <div style="font-size:1.5rem; color:var(--dark-color); margin-bottom:30px;">Stay Connected With LUNAS</div>
                         
                         <div class="social-icons">
-                            <a href="#" class="social-icon">
+                            <a href="https://www.instagram.com/lunas_parlour?igsh=c2R3bDByaXA3czU0" class="social-icon">
                                 <div class="social-circle instagram">
                                     <i class="fab fa-instagram"></i>
                                 </div>
                                 <div style="font-weight:600; color:var(--dark-color);">Instagram</div>
-                                <div style="color:var(--text-light);">@lunasbeauty</div>
+                                <div style="color:var(--text-light);">@lunas_palour</div>
                             </a>
                             
-                            <a href="#" class="social-icon">
+                            <a href="https://www.tiktok.com/@lunasbeautyparlour?_r=1&_t=ZM-92rzD9ajM5o" class="social-icon">
                                 <div class="social-circle tiktok">
                                     <i class="fab fa-tiktok"></i>
                                 </div>
                                 <div style="font-weight:600; color:var(--dark-color);">TikTok</div>
-                                <div style="color:var(--text-light);">@lunasbeauty</div>
+                                <div style="color:var(--text-light);">@lunasbeautypalour</div>
                             </a>
                             
-                            <a href="#" class="social-icon">
-                                <div class="social-circle whatsapp">
-                                    <i class="fab fa-whatsapp"></i>
-                                </div>
-                                <div style="font-weight:600; color:var(--dark-color);">WhatsApp</div>
-                                <div style="color:var(--text-light);">Book appointments</div>
-                            </a>
+                           <a href="https://wa.me/233700422752?text=Hello%20LUNAS%20Beauty%20Salon,%20I%20would%20like%20to%20book%20an%20appointment" 
+   target="_blank" 
+   class="social-icon">
+    <div class="social-circle whatsapp">
+        <i class="fab fa-whatsapp"></i>
+    </div>
+    <div style="font-weight:600; color:var(--dark-color);">WhatsApp</div>
+    <div style="color:var(--text-light);">Book appointments</div>
+</a>
                         </div>
                     </div>
                     
