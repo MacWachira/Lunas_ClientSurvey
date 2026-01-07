@@ -1,0 +1,16 @@
+{
+  "name": "lunas-beauty-salon",
+  "version": "1.0.0",
+  "description": "LUNAS Beauty Salon Client Survey & Analytics System",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve .",
+    "dev": "serve ."
+  },
+  "dependencies": {
+    "serve": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
