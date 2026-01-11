@@ -343,6 +343,18 @@
             background-color: #e0e0e0;
         }
         
+        /* Delete Button */
+        .btn-danger {
+            background: linear-gradient(to right, var(--danger-color), #c0392b);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(to right, #c0392b, #a93226);
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(231, 76, 60, 0.25);
+        }
+        
         /* Thank You Card */
         .thank-you-card {
             text-align: center;
@@ -1150,11 +1162,11 @@
                 const existingService = businessData.services.find(s => s.name === serviceName);
                 
                 if (existingService) {
-                    existingService.count++; // Changed from "sales" to "count"
+                    existingService.count++;
                 } else {
                     businessData.services.push({
                         name: serviceName,
-                        count: 1 // Changed from "sales" to "count"
+                        count: 1
                     });
                 }
             });
@@ -1329,12 +1341,18 @@
                 
                 <!-- Data Management -->
                 <div class="dashboard-card">
-                    <h2><i class="fas fa-download"></i> Data Management</h2>
-                    <p style="color:var(--text-light); margin-bottom:15px;">Export your client feedback data for analysis</p>
+                    <h2><i class="fas fa-database"></i> Data Management</h2>
+                    <p style="color:var(--text-light); margin-bottom:15px;">Manage your client feedback data</p>
                     <div style="display:flex; gap:15px; flex-wrap:wrap;">
-                        <button class="btn btn-primary" id="exportBtn">Export All Data</button>
-                        <button class="btn btn-secondary" id="loadSampleBtn">Load Sample Data</button>
-                        <button class="btn btn-secondary" id="refreshBtn">Refresh Dashboard</button>
+                        <button class="btn btn-primary" id="exportBtn">
+                            <i class="fas fa-download"></i> Export All Data
+                        </button>
+                        <button class="btn btn-danger" id="deleteBtn">
+                            <i class="fas fa-trash-alt"></i> Delete All Responses
+                        </button>
+                        <button class="btn btn-secondary" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i> Refresh Dashboard
+                        </button>
                     </div>
                 </div>
                 
@@ -1418,11 +1436,9 @@
                 exportData();
             });
             
-            // Load sample data button
-            document.getElementById('loadSampleBtn')?.addEventListener('click', function() {
-                if (confirm('Load sample data? This will add sample entries for demonstration.')) {
-                    loadSampleData();
-                }
+            // Delete button
+            document.getElementById('deleteBtn')?.addEventListener('click', function() {
+                deleteAllResponses();
             });
             
             // Initialize charts
@@ -1509,115 +1525,35 @@
             }
         }
         
+        function deleteAllResponses() {
+            if (!confirm('⚠️ WARNING: This action will DELETE ALL client responses and feedback data!\n\nThis cannot be undone. Are you sure you want to proceed?')) {
+                return;
+            }
+            
+            // Reset to initial empty state
+            const initialData = {
+                clients: [],
+                services: [],
+                feedback: [],
+                newClientsCount: 0,
+                returningClientsCount: 0,
+                startDate: new Date().toISOString()
+            };
+            
+            localStorage.setItem('lunasBusinessData', JSON.stringify(initialData));
+            
+            // Refresh dashboard
+            showDashboard();
+            
+            // Show success message
+            alert('✅ All client responses have been deleted successfully! The system has been reset to initial state.');
+        }
+        
         function exportData() {
             const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
             const csv = convertToCSV(data);
             downloadCSV(csv, 'lunas_client_feedback_data.csv');
-            alert('Data exported successfully!');
-        }
-        
-        function loadSampleData() {
-            const businessData = JSON.parse(localStorage.getItem('lunasBusinessData'));
-            
-            // Add sample clients
-            const sampleClients = [
-                {
-                    id: 'LUN' + Date.now(),
-                    type: 'new',
-                    phone: '0551234567',
-                    visitDate: new Date().toISOString().split('T')[0],
-                    services: ['Gel Polish', 'Manicure'],
-                    rating: 5,
-                    staffRating: 5,
-                    cleanlinessRating: 5,
-                    waitTimeRating: 4,
-                    submissionDate: new Date().toISOString()
-                },
-                {
-                    id: 'LUN' + (Date.now() + 1),
-                    type: 'returning',
-                    phone: '0549876543',
-                    visitDate: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-                    services: ['Wig Installation and Styling'],
-                    rating: 4,
-                    staffRating: 4,
-                    cleanlinessRating: 5,
-                    waitTimeRating: 3,
-                    submissionDate: new Date(Date.now() - 86400000).toISOString()
-                },
-                {
-                    id: 'LUN' + (Date.now() + 2),
-                    type: 'new',
-                    phone: '0207654321',
-                    visitDate: new Date(Date.now() - 172800000).toISOString().split('T')[0],
-                    services: ['Facial', 'Massage', 'Eyelash Extension'],
-                    rating: 5,
-                    staffRating: 5,
-                    cleanlinessRating: 4,
-                    waitTimeRating: 5,
-                    submissionDate: new Date(Date.now() - 172800000).toISOString()
-                }
-            ];
-            
-            sampleClients.forEach(client => businessData.clients.push(client));
-            businessData.newClientsCount += 2;
-            businessData.returningClientsCount += 1;
-            
-            // Add sample services if not exists
-            const sampleServices = [
-                { name: 'Gel Polish', count: 5 },
-                { name: 'Manicure', count: 8 },
-                { name: 'Wig Installation and Styling', count: 3 },
-                { name: 'Facial', count: 4 },
-                { name: 'Massage', count: 6 },
-                { name: 'Eyelash Extension', count: 7 }
-            ];
-            
-            sampleServices.forEach(sample => {
-                const existing = businessData.services.find(s => s.name === sample.name);
-                if (existing) {
-                    existing.count += sample.count;
-                } else {
-                    businessData.services.push(sample);
-                }
-            });
-            
-            // Add sample feedback
-            const sampleFeedback = [
-                {
-                    id: sampleClients[0].id,
-                    type: 'compliment',
-                    text: 'Excellent service! The staff was very professional and my nails look amazing. Will definitely come back!',
-                    recommendation: 'yes-definitely',
-                    improvements: null,
-                    date: new Date().toISOString()
-                },
-                {
-                    id: sampleClients[1].id,
-                    type: 'suggestion',
-                    text: 'Would be great to have more parking space and evening appointments for working clients.',
-                    recommendation: 'yes-probably',
-                    improvements: 'Improve parking and offer evening hours',
-                    date: new Date(Date.now() - 86400000).toISOString()
-                },
-                {
-                    id: sampleClients[2].id,
-                    type: 'compliment',
-                    text: 'The facial and massage were incredibly relaxing. My skin feels amazing!',
-                    recommendation: 'yes-definitely',
-                    improvements: null,
-                    date: new Date(Date.now() - 172800000).toISOString()
-                }
-            ];
-            
-            sampleFeedback.forEach(fb => businessData.feedback.push(fb));
-            
-            // Save updated data
-            localStorage.setItem('lunasBusinessData', JSON.stringify(businessData));
-            
-            // Refresh dashboard
-            showDashboard();
-            alert('Sample data loaded successfully! You now have sample data to analyze.');
+            alert('✅ Data exported successfully!');
         }
         
         function convertToCSV(obj) {
