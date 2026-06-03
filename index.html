@@ -6,6 +6,7 @@
     <title>LUNAS Beauty Salon - Client Survey & Analytics System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #006850;
@@ -20,122 +21,126 @@
             --danger-color: #e74c3c;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
+            --info-color: #3498db;
+            --purple: #9b59b6;
+            --orange: #e67e22;
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', 'Segoe UI', sans-serif; }
-        body { background-color: var(--light-bg); color: var(--text-dark); line-height: 1.6; min-height: 100vh; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif; }
+        body { background: linear-gradient(145deg, #f0f4f8 0%, #e8edf2 100%); min-height: 100vh; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         
-        .main-header { background: linear-gradient(135deg, var(--primary-color), #00875a); padding: 20px 0; margin-bottom: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .header-content { max-width: 1400px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .logo { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: white; letter-spacing: 2px; text-transform: uppercase; }
+        .main-header { background: linear-gradient(135deg, var(--primary-color), #00875a); padding: 20px 0; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); position: relative; overflow: hidden; }
+        .main-header::before { content: ''; position: absolute; top: -50%; right: -20%; width: 40%; height: 200%; background: rgba(255,255,255,0.05); transform: rotate(25deg); }
+        .header-content { max-width: 1400px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; position: relative; z-index: 2; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: white; letter-spacing: 2px; text-transform: uppercase; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
         .tagline { font-size: 1rem; color: rgba(255,255,255,0.9); letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; }
         .nav-buttons { display: flex; gap: 15px; }
-        .nav-btn { padding: 12px 25px; background-color: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 10px; }
+        .nav-btn { padding: 12px 25px; background-color: rgba(255,255,255,0.15); backdrop-filter: blur(4px); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 40px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 10px; }
         .nav-btn:hover { background-color: rgba(255,255,255,0.25); transform: translateY(-2px); }
-        .nav-btn.active { background-color: var(--secondary-color); color: var(--dark-color); }
+        .nav-btn.active { background-color: var(--secondary-color); color: var(--dark-color); border-color: transparent; box-shadow: 0 5px 15px rgba(251,176,64,0.3); }
         
         #surveySection { display: block; }
         #dashboardSection { display: none; }
         
-        .survey-header { text-align: center; margin-bottom: 40px; padding: 30px; background: linear-gradient(135deg, rgba(0,104,80,0.1), rgba(251,176,64,0.1)); border-radius: 16px; }
+        .survey-header { text-align: center; margin-bottom: 40px; padding: 35px; background: linear-gradient(135deg, rgba(0,104,80,0.08), rgba(251,176,64,0.08)); border-radius: 28px; backdrop-filter: blur(4px); }
         .survey-title { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; }
         .survey-subtitle { font-size: 1.1rem; color: var(--text-light); max-width: 700px; margin: 0 auto; }
         
-        .progress-container { margin-bottom: 40px; }
-        .progress-bar { height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); width: 0%; transition: width 0.5s ease; }
+        .progress-container { margin-bottom: 35px; }
+        .progress-bar { height: 8px; background-color: var(--border-color); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(to right, var(--primary-color), var(--secondary-color), #ff8c42); border-radius: 10px; width: 0%; transition: width 0.5s ease; }
         
-        .survey-card { background-color: var(--card-bg); border-radius: 16px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 30px; border: 1px solid var(--border-color); display: none; }
-        .survey-card.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .survey-card { background-color: var(--card-bg); border-radius: 32px; padding: 44px 48px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.12); margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.6); display: none; transition: all 0.3s; }
+        .survey-card.active { display: block; animation: fadeInUp 0.5s ease; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         
-        .card-header { margin-bottom: 30px; }
-        .card-header h2 { font-size: 1.8rem; color: var(--primary-color); margin-bottom: 10px; }
+        .card-header { margin-bottom: 30px; border-left: 4px solid var(--secondary-color); padding-left: 20px; }
+        .card-header h2 { font-size: 1.8rem; color: var(--primary-color); margin-bottom: 8px; }
+        .card-header p { color: var(--text-light); }
         
         .form-group { margin-bottom: 25px; }
         label { display: block; font-weight: 600; margin-bottom: 10px; color: var(--dark-color); }
         .required { color: var(--danger-color); }
-        input, select, textarea { width: 100%; padding: 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1rem; transition: all 0.3s; background: white; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(0,104,80,0.1); }
-        textarea { min-height: 120px; resize: vertical; }
+        input, select, textarea { width: 100%; padding: 16px 20px; border: 2px solid var(--border-color); border-radius: 20px; font-size: 1rem; transition: all 0.3s; background: white; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(0,104,80,0.1); }
+        textarea { min-height: 100px; resize: vertical; }
         
         /* Enhanced Services Grid with Per-Service Ratings */
-        .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 10px; }
-        .service-item { background: #f8f9fa; border-radius: 12px; border: 2px solid var(--border-color); transition: all 0.2s; overflow: hidden; }
-        .service-item.selected { border-color: var(--primary-color); background: white; box-shadow: 0 4px 12px rgba(0,104,80,0.1); }
-        .service-header { display: flex; align-items: center; padding: 15px; cursor: pointer; }
-        .service-header input { width: 20px; height: 20px; margin-right: 12px; cursor: pointer; accent-color: var(--primary-color); }
-        .service-header span { font-weight: 600; cursor: pointer; flex: 1; }
-        .service-rating-panel { padding: 0 15px 15px 15px; background: white; border-top: 1px dashed var(--border-color); display: none; }
-        .service-item.selected .service-rating-panel { display: block; }
-        .star-rating { display: flex; gap: 8px; margin: 12px 0 10px 0; }
-        .star-rating span { font-size: 1.6rem; cursor: pointer; color: #cbd5e1; transition: 0.1s; }
-        .star-rating span.active { color: var(--secondary-color); text-shadow: 0 0 3px rgba(251,176,64,0.4); }
-        .service-comment { margin-top: 8px; }
-        .service-comment input { width: 100%; padding: 10px 14px; border-radius: 20px; border: 1px solid var(--border-color); font-size: 0.85rem; }
+        .services-grid-enhanced { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
+        .service-card-enhanced { background: #fafcff; border-radius: 20px; border: 2px solid var(--border-color); transition: all 0.25s ease; overflow: hidden; }
+        .service-card-enhanced:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .service-card-enhanced.selected { border-color: var(--primary-color); background: white; box-shadow: 0 8px 20px rgba(0,104,80,0.12); }
+        .service-header-enhanced { display: flex; align-items: center; padding: 16px 18px; cursor: pointer; background: inherit; }
+        .service-header-enhanced input { width: 22px; height: 22px; margin-right: 14px; cursor: pointer; accent-color: var(--primary-color); }
+        .service-header-enhanced span { font-weight: 600; font-size: 1rem; flex: 1; cursor: pointer; }
+        .service-rating-panel { padding: 0 18px 18px 18px; background: white; border-top: 1px dashed var(--border-color); display: none; }
+        .service-card-enhanced.selected .service-rating-panel { display: block; animation: slideDown 0.25s ease; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .stars-enhanced { display: flex; gap: 8px; margin: 12px 0 10px 0; }
+        .stars-enhanced span { font-size: 1.6rem; cursor: pointer; color: #cbd5e1; transition: 0.1s; }
+        .stars-enhanced span.active { color: var(--secondary-color); text-shadow: 0 0 3px rgba(251,176,64,0.4); }
+        .service-comment-enhanced input { width: 100%; padding: 10px 14px; border-radius: 40px; border: 1px solid var(--border-color); font-size: 0.85rem; background: #fefefe; }
         
         .rating-container { display: flex; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; gap: 10px; }
-        .rating-option { flex: 1; min-width: 100px; text-align: center; padding: 15px 10px; background-color: #f8f9fa; border-radius: 10px; cursor: pointer; transition: all 0.2s; border: 2px solid var(--border-color); }
-        .rating-option:hover { border-color: var(--primary-color); }
-        .rating-option.selected { border-color: var(--primary-color); background-color: rgba(0,104,80,0.08); }
-        .rating-option i { font-size: 1.5rem; margin-bottom: 6px; display: block; }
+        .rating-option { flex: 1; min-width: 100px; text-align: center; padding: 14px 10px; background-color: #f8f9fa; border-radius: 50px; cursor: pointer; transition: all 0.2s; border: 2px solid var(--border-color); font-weight: 500; }
+        .rating-option:hover { border-color: var(--primary-color); transform: scale(1.02); }
+        .rating-option.selected { border-color: var(--primary-color); background-color: var(--primary-color); color: white; }
+        .rating-option i { font-size: 1.4rem; margin-bottom: 4px; display: block; }
         
         .btn-container { display: flex; justify-content: space-between; margin-top: 40px; gap: 20px; }
-        .btn { padding: 16px 35px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; flex: 1; }
-        .btn-primary { background: linear-gradient(to right, var(--primary-color), #00875a); color: white; }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(0,104,80,0.25); }
-        .btn-secondary { background-color: #f0f0f0; color: var(--dark-color); }
-        .btn-secondary:hover { background-color: #e0e0e0; }
-        .btn-danger { background: linear-gradient(to right, var(--danger-color), #c0392b); color: white; }
+        .btn { padding: 16px 35px; border: none; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; flex: 1; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary-color), #00875a); color: white; box-shadow: 0 5px 15px rgba(0,104,80,0.2); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,104,80,0.3); }
+        .btn-secondary { background-color: #f0f0f0; color: var(--dark-color); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: #e0e0e0; transform: translateY(-2px); }
+        .btn-danger { background: linear-gradient(135deg, var(--danger-color), #c0392b); color: white; }
         
         .thank-you-card { text-align: center; padding: 60px 40px; display: none; }
         .thank-you-card.active { display: block; }
-        .thank-you-icon { font-size: 5rem; color: var(--primary-color); margin-bottom: 30px; }
-        .thank-you-card h2 { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px; }
+        .thank-you-icon { font-size: 5rem; color: var(--primary-color); margin-bottom: 25px; }
+        .thank-you-card h2 { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; }
         
-        .social-icons { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin: 30px 0; }
+        .social-icons { display: flex; justify-content: center; gap: 35px; flex-wrap: wrap; margin: 30px 0; }
         .social-icon { display: flex; flex-direction: column; align-items: center; text-decoration: none; transition: 0.3s; }
         .social-icon:hover { transform: translateY(-5px); }
-        .social-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 2rem; color: white; }
+        .social-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 2rem; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .instagram { background: linear-gradient(45deg, #405DE6, #833AB4, #E1306C); }
         .tiktok { background: linear-gradient(45deg, #000000, #25F4EE, #FE2C55); }
         .whatsapp { background: linear-gradient(45deg, #25D366, #128C7E); }
         
-        /* Dashboard Styles */
-        .dashboard-header { background: linear-gradient(135deg, var(--primary-color), #00875a); color: white; padding: 25px 30px; border-radius: 16px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .logout-btn { background-color: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        /* Modern Dashboard */
+        .dashboard-header { background: linear-gradient(135deg, var(--primary-color), #00875a); border-radius: 28px; padding: 30px 35px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 12px 25px; border-radius: 40px; font-weight: 600; cursor: pointer; color: white; transition: 0.2s; }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+        
         .login-container { display: flex; justify-content: center; align-items: center; min-height: 60vh; }
-        .login-card { background-color: var(--card-bg); border-radius: 20px; padding: 50px; box-shadow: 0 15px 40px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
+        .login-card { background: white; border-radius: 32px; padding: 50px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
         .login-error { color: var(--danger-color); margin-top: 15px; display: none; }
         
-        .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .stat-card { background-color: var(--card-bg); border-radius: 12px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); display: flex; align-items: center; gap: 20px; transition: 0.3s; }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .stat-icon { width: 70px; height: 70px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; }
-        .stat-icon.clients { background: linear-gradient(135deg, var(--primary-color), #00875a); }
-        .stat-icon.rating { background: linear-gradient(135deg, var(--secondary-color), #f8a62b); }
-        .stat-icon.services { background: linear-gradient(135deg, #3498db, #2980b9); }
-        .stat-icon.feedback { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
-        .stat-info h3 { font-size: 2.5rem; font-weight: 700; color: var(--dark-color); line-height: 1; margin-bottom: 5px; }
-        .stat-info p { color: var(--text-light); font-weight: 500; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .stat-card-modern { background: white; border-radius: 24px; padding: 22px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: all 0.3s; border-bottom: 4px solid var(--secondary-color); }
+        .stat-card-modern:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary-color); line-height: 1; margin-bottom: 5px; }
+        .stat-label { color: var(--text-light); font-weight: 500; }
         
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; margin-bottom: 40px; }
-        @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 1fr; } }
-        .dashboard-card { background-color: var(--card-bg); border-radius: 16px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
-        .chart-container { height: 300px; margin-top: 20px; }
-        .service-list { max-height: 400px; overflow-y: auto; }
-        .service-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
-        .service-count { background-color: rgba(0,104,80,0.1); color: var(--primary-color); padding: 5px 12px; border-radius: 20px; font-weight: 600; }
-        .feedback-item { padding: 18px; border-radius: 12px; margin-bottom: 15px; background-color: #f8f9fa; border-left: 4px solid var(--primary-color); transition: 0.2s; }
-        .feedback-item:hover { transform: translateX(5px); background-color: #fff; }
-        .per-service-table { margin-top: 15px; }
-        .per-service-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eef2f8; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 28px; margin-bottom: 35px; }
+        @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: 1fr; } }
         
-        @media (max-width: 768px) { .container { padding: 15px; } .survey-card { padding: 20px; } .services-grid { grid-template-columns: 1fr; } .rating-container { flex-direction: column; } .btn-container { flex-direction: column; } .btn { width: 100%; } }
+        .dashboard-card-modern { background: white; border-radius: 28px; padding: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: 0.2s; }
+        .dashboard-card-modern:hover { box-shadow: 0 12px 30px rgba(0,0,0,0.1); }
+        .chart-container { height: 280px; margin-top: 15px; }
+        .service-rank-item { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #eef2f8; }
+        .service-rank-name { font-weight: 500; }
+        .service-rank-count { background: rgba(0,104,80,0.1); color: var(--primary-color); padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 0.85rem; }
+        .feedback-item-modern { padding: 18px; border-radius: 20px; margin-bottom: 14px; background: #fafcff; border-left: 5px solid var(--primary-color); transition: 0.2s; }
+        .feedback-item-modern:hover { transform: translateX(5px); background: white; }
+        .per-service-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eef2f8; }
         
-        .success-toast { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 15px 25px; border-radius: 50px; display: flex; align-items: center; gap: 12px; font-weight: 600; z-index: 1000; transform: translateX(400px); transition: 0.3s; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .success-toast.show { transform: translateX(0); }
+        @media (max-width: 768px) { .container { padding: 15px; } .survey-card { padding: 28px 24px; } .services-grid-enhanced { grid-template-columns: 1fr; } .btn-container { flex-direction: column; } .btn { width: 100%; } }
+        
+        .toast-success { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 16px 28px; border-radius: 50px; display: flex; align-items: center; gap: 12px; font-weight: 600; z-index: 1000; transform: translateX(400px); transition: 0.3s; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .toast-success.show { transform: translateX(0); }
     </style>
 </head>
 <body>
@@ -154,18 +159,17 @@
         <section id="dashboardSection"></section>
     </div>
 
-    <div id="successToast" class="success-toast"><i class="fas fa-check-circle"></i><span>Thank you! Your feedback has been recorded.</span><i class="fas fa-times-circle" style="margin-left: 10px;"></i></div>
+    <div id="toastMsg" class="toast-success"><i class="fas fa-check-circle"></i><span>Thank you! Your feedback has been recorded.</span><i class="fas fa-times-circle" style="margin-left: 12px;"></i></div>
 
     <script>
-        function showSuccessMessage(msg) {
-            const toast = document.getElementById('successToast');
+        function showToast(msg) {
+            const toast = document.getElementById('toastMsg');
             toast.querySelector('span').textContent = msg || '✨ Thank you for your feedback! ✨';
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 4000);
             toast.onclick = (e) => { if(e.target.classList.contains('fa-times-circle')) toast.classList.remove('show'); };
         }
         
-        // Initialize storage
         if (!localStorage.getItem('lunasBusinessData')) {
             localStorage.setItem('lunasBusinessData', JSON.stringify({
                 clients: [], services: [], feedback: [], servicePerceptions: [], employeeShoutouts: [],
@@ -174,11 +178,11 @@
         }
         
         // Navigation
-        document.getElementById('navSurvey').addEventListener('click', () => switchSection('survey'));
-        document.getElementById('navDashboard').addEventListener('click', () => switchSection('dashboard'));
+        document.getElementById('navSurvey').onclick = () => switchSection('survey');
+        document.getElementById('navDashboard').onclick = () => switchSection('dashboard');
         
         function switchSection(section) {
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if (section === 'survey') {
                 document.getElementById('navSurvey').classList.add('active');
                 document.getElementById('surveySection').style.display = 'block';
@@ -192,28 +196,28 @@
             }
         }
         
-        const SERVICES_LIST = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"];
+        const SERVICES = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"];
         
         function loadSurveyTool() {
-            let servicesHtml = `<div class="services-grid">`;
-            SERVICES_LIST.forEach(svc => {
+            let servicesHtml = `<div class="services-grid-enhanced">`;
+            SERVICES.forEach(svc => {
                 servicesHtml += `
-                    <div class="service-item" data-service="${svc}">
-                        <div class="service-header">
+                    <div class="service-card-enhanced" data-service="${svc}">
+                        <div class="service-header-enhanced">
                             <input type="checkbox" name="service" class="service-check" value="${svc}">
                             <span>${svc}</span>
                         </div>
                         <div class="service-rating-panel">
-                            <div class="star-rating">${[1,2,3,4,5].map(s => `<span data-star="${s}">★</span>`).join('')}</div>
-                            <div class="service-comment"><input type="text" class="svc-comment" placeholder="Your experience with ${svc}..."></div>
+                            <div class="stars-enhanced">${[1,2,3,4,5].map(s => `<span data-star="${s}">★</span>`).join('')}</div>
+                            <div class="service-comment-enhanced"><input type="text" class="svc-comment" placeholder="Your experience with ${svc}..."></div>
                         </div>
                     </div>
                 `;
             });
-            servicesHtml += `</div><div class="form-group"><label for="otherService">If "Other", please specify:</label><input type="text" id="otherService" placeholder="Describe the service"></div>`;
+            servicesHtml += `</div><div class="form-group"><label for="otherServiceSpec">If "Other", please specify:</label><input type="text" id="otherServiceSpec" placeholder="Describe the service"></div>`;
             
             const surveyHTML = `
-                <div class="survey-header"><h1 class="survey-title">Client Satisfaction Survey</h1><p class="survey-subtitle">Thank you for choosing LUNAS. Rate each service you received!</p></div>
+                <div class="survey-header"><h1 class="survey-title">✨ Client Satisfaction Survey ✨</h1><p class="survey-subtitle">Thank you for choosing LUNAS. Your feedback helps us improve.</p></div>
                 <div class="progress-container"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div>
                 
                 <div class="survey-card active" id="card1">
@@ -221,17 +225,17 @@
                     <form id="clientInfoForm">
                         <div class="form-group"><label>Phone Number</label><input type="tel" id="clientPhone" placeholder="Enter your phone number"></div>
                         <div class="form-group"><label>Date of Visit <span class="required">*</span></label><input type="date" id="visitDate" required></div>
-                        <div class="form-group"><label>Is this your first visit to LUNAS? <span class="required">*</span></label><select id="clientType" required><option value="">Select an option</option><option value="new">Yes, first time</option><option value="returning">No, I've been here before</option></select></div>
+                        <div class="form-group"><label>Is this your first visit to LUNAS? <span class="required">*</span></label><select id="clientType" required><option value="">Select an option</option><option value="new">✨ Yes, first time</option><option value="returning">💎 No, I've been here before</option></select></div>
                     </form>
-                    <div class="btn-container"><button class="btn btn-secondary" disabled><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="next1">Next <i class="fas fa-arrow-right"></i></button></div>
+                    <div class="btn-container"><button class="btn btn-secondary" disabled>Previous</button><button class="btn btn-primary" id="next1">Next <i class="fas fa-arrow-right"></i></button></div>
                 </div>
                 
                 <div class="survey-card" id="card2">
-                    <div class="card-header"><h2><i class="fas fa-spa"></i> Services Received & Your Experience</h2><p>Select each service, then rate it with stars and add a comment</p></div>
+                    <div class="card-header"><h2><i class="fas fa-spa"></i> Services Received & Your Experience</h2><p>Select each service you received, rate it with stars, and add a comment</p></div>
                     <form id="servicesForm">${servicesHtml}</form>
-                    <div class="form-group" style="margin-top:20px; background: linear-gradient(115deg, #FFF9EF, #FFF5E6); padding: 20px; border-radius: 16px;">
+                    <div class="form-group" style="margin-top:25px; background: linear-gradient(115deg, #FFF9EF, #FFF5E6); padding: 22px; border-radius: 24px;">
                         <label><i class="fas fa-star-of-life" style="color: var(--secondary-color);"></i> 🌟 Shout-out to an amazing employee!</label>
-                        <textarea id="employeeShoutout" rows="2" placeholder="e.g., Sarah made my nails perfect! Her attention to detail was incredible..." style="resize: vertical;"></textarea>
+                        <textarea id="employeeShoutoutField" rows="2" placeholder="e.g., Sarah made my nails perfect! Her attention to detail was incredible..." style="resize: vertical;"></textarea>
                         <small style="color: var(--text-light);">Recognize any team member who provided exceptional service</small>
                     </div>
                     <div class="btn-container"><button class="btn btn-secondary" id="prev2"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="next2">Next <i class="fas fa-arrow-right"></i></button></div>
@@ -251,12 +255,12 @@
                 <div class="survey-card" id="card4">
                     <div class="card-header"><h2><i class="fas fa-comment-dots"></i> Your Feedback</h2><p>Please share any additional comments, suggestions, or concerns</p></div>
                     <form id="feedbackForm">
-                        <div class="form-group"><label>Type of Feedback <span class="required">*</span></label><select id="feedbackType" required><option value="">Select feedback type</option><option value="compliment">Compliment</option><option value="suggestion">Suggestion</option><option value="complaint">Complaint</option></select></div>
+                        <div class="form-group"><label>Type of Feedback <span class="required">*</span></label><select id="feedbackType" required><option value="">Select feedback type</option><option value="compliment">💖 Compliment</option><option value="suggestion">💡 Suggestion</option><option value="complaint">⚠️ Complaint</option></select></div>
                         <div class="form-group"><label>Your Detailed Feedback <span class="required">*</span></label><textarea id="feedbackText" placeholder="Please share your detailed feedback..." required></textarea></div>
                         <div class="form-group"><label>Would you recommend us to friends or family? <span class="required">*</span></label><select id="recommendation" required><option value="">Select an option</option><option value="yes-definitely">Yes, definitely</option><option value="yes-probably">Yes, probably</option><option value="not-sure">Not sure</option><option value="probably-not">Probably not</option><option value="no">No</option></select></div>
                         <div class="form-group"><label>How can we improve our services?</label><textarea id="improvementSuggestions" placeholder="Any suggestions for improvement?"></textarea></div>
                     </form>
-                    <div class="btn-container"><button class="btn btn-secondary" id="prev4"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="submitSurvey">Submit Survey <i class="fas fa-paper-plane"></i></button></div>
+                    <div class="btn-container"><button class="btn btn-secondary" id="prev4"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="submitSurveyBtn">Submit Survey <i class="fas fa-paper-plane"></i></button></div>
                 </div>
                 
                 <div class="survey-card thank-you-card" id="thankYouCard">
@@ -266,12 +270,12 @@
                     <div class="social-media-section">
                         <div style="font-size:1.3rem; margin-bottom:20px;">Stay Connected With LUNAS</div>
                         <div class="social-icons">
-                            <a href="https://www.instagram.com/lunas_parlour?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" class="social-icon"><div class="social-circle instagram"><i class="fab fa-instagram"></i></div><div style="font-weight:600;">Instagram</div><div style="font-size:0.8rem;">@lunas_parlour</div></a>
-                            <a href="https://www.tiktok.com/@lunasbeautyparlour?is_from_webapp=1&sender_device=pc" target="_blank" rel="noopener noreferrer" class="social-icon"><div class="social-circle tiktok"><i class="fab fa-tiktok"></i></div><div style="font-weight:600;">TikTok</div><div style="font-size:0.8rem;">@lunasbeautyparlour</div></a>
-                            <a href="https://wa.me/233700422752" target="_blank" rel="noopener noreferrer" class="social-icon"><div class="social-circle whatsapp"><i class="fab fa-whatsapp"></i></div><div style="font-weight:600;">WhatsApp</div><div style="font-size:0.8rem;">0700 422 752</div></a>
+                            <a href="https://www.instagram.com/lunas_parlour?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="social-icon"><div class="social-circle instagram"><i class="fab fa-instagram"></i></div><div style="font-weight:600;">Instagram</div><div style="font-size:0.8rem;">@lunas_parlour</div></a>
+                            <a href="https://www.tiktok.com/@lunasbeautyparlour?is_from_webapp=1&sender_device=pc" target="_blank" class="social-icon"><div class="social-circle tiktok"><i class="fab fa-tiktok"></i></div><div style="font-weight:600;">TikTok</div><div style="font-size:0.8rem;">@lunasbeautyparlour</div></a>
+                            <a href="https://wa.me/233700422752" target="_blank" class="social-icon"><div class="social-circle whatsapp"><i class="fab fa-whatsapp"></i></div><div style="font-weight:600;">WhatsApp</div><div style="font-size:0.8rem;">0700 422 752</div></a>
                         </div>
                     </div>
-                    <button class="btn btn-primary" id="newSurvey" style="max-width:300px; margin:40px auto 0;"><i class="fas fa-redo"></i> Submit Another Feedback</button>
+                    <button class="btn btn-primary" id="newSurveyBtn" style="max-width:300px; margin:30px auto 0;"><i class="fas fa-redo"></i> Submit Another Feedback</button>
                 </div>
             `;
             document.getElementById('surveySection').innerHTML = surveyHTML;
@@ -284,114 +288,67 @@
             document.getElementById('visitDate').max = today;
             
             // Service card click handlers
-            document.querySelectorAll('.service-item').forEach(item => {
-                const chk = item.querySelector('.service-check');
-                const header = item.querySelector('.service-header');
-                header.addEventListener('click', (e) => {
-                    if (e.target.tagName !== 'INPUT') {
-                        chk.checked = !chk.checked;
-                        if (chk.checked) item.classList.add('selected');
-                        else item.classList.remove('selected');
-                    }
-                });
-                chk.addEventListener('change', (e) => {
-                    e.stopPropagation();
-                    if (chk.checked) item.classList.add('selected');
-                    else item.classList.remove('selected');
-                });
+            document.querySelectorAll('.service-card-enhanced').forEach(card => {
+                const chk = card.querySelector('.service-check');
+                const header = card.querySelector('.service-header-enhanced');
+                header.onclick = (e) => { if(e.target.tagName !== 'INPUT') { chk.checked = !chk.checked; if(chk.checked) card.classList.add('selected'); else card.classList.remove('selected'); } };
+                chk.onchange = (e) => { e.stopPropagation(); if(chk.checked) card.classList.add('selected'); else card.classList.remove('selected'); };
             });
             
-            // Star rating per service
-            document.querySelectorAll('.star-rating').forEach(rating => {
-                const stars = rating.querySelectorAll('span');
-                stars.forEach(star => {
-                    star.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const val = parseInt(this.dataset.star);
-                        stars.forEach((s, idx) => {
-                            if (idx < val) s.classList.add('active');
-                            else s.classList.remove('active');
-                        });
-                    });
-                });
+            // Star ratings per service
+            document.querySelectorAll('.stars-enhanced').forEach(stars => {
+                const starSpans = stars.querySelectorAll('span');
+                starSpans.forEach(star => star.onclick = function(e) { e.stopPropagation(); const val = parseInt(this.dataset.star); starSpans.forEach((s, i) => { if(i < val) s.classList.add('active'); else s.classList.remove('active'); }); });
             });
             
-            // Overall rating selection
-            document.querySelectorAll('.rating-option').forEach(opt => {
-                opt.addEventListener('click', function() {
-                    const ratingValue = this.getAttribute('data-value');
-                    document.getElementById('overallRating').value = ratingValue;
-                    document.querySelectorAll('.rating-option').forEach(o => o.classList.remove('selected'));
-                    this.classList.add('selected');
-                });
+            // Overall rating
+            document.querySelectorAll('#ratingContainer .rating-option').forEach(opt => {
+                opt.onclick = function() { document.getElementById('overallRating').value = this.dataset.value; document.querySelectorAll('#ratingContainer .rating-option').forEach(o => o.classList.remove('selected')); this.classList.add('selected'); };
             });
             
-            // Navigation
-            let currentCard = 1;
-            const totalCards = 4;
-            function showCard(cardNumber) {
-                document.querySelectorAll('.survey-card').forEach(card => card.classList.remove('active'));
-                document.getElementById(`card${cardNumber}`).classList.add('active');
-                document.getElementById('progressFill').style.width = `${((cardNumber - 1) / totalCards) * 100}%`;
-                currentCard = cardNumber;
-            }
+            let current = 1;
+            const showCard = (n) => { document.querySelectorAll('.survey-card').forEach(c => c.classList.remove('active')); document.getElementById(`card${n}`).classList.add('active'); document.getElementById('progressFill').style.width = `${((n-1)/4)*100}%`; };
             
-            document.getElementById('next1').addEventListener('click', () => { if(document.getElementById('clientInfoForm').checkValidity()) showCard(2); else document.getElementById('clientInfoForm').reportValidity(); });
-            document.getElementById('next2').addEventListener('click', () => { if(document.querySelectorAll('.service-check:checked').length > 0) showCard(3); else alert('Please select at least one service.'); });
-            document.getElementById('next3').addEventListener('click', () => { if(document.getElementById('overallRating').value) showCard(4); else alert('Please rate the overall service quality.'); });
-            document.getElementById('prev2').addEventListener('click', () => showCard(1));
-            document.getElementById('prev3').addEventListener('click', () => showCard(2));
-            document.getElementById('prev4').addEventListener('click', () => showCard(3));
+            document.getElementById('next1').onclick = () => { if(document.getElementById('clientInfoForm').checkValidity()) showCard(2); else document.getElementById('clientInfoForm').reportValidity(); };
+            document.getElementById('next2').onclick = () => { if(document.querySelectorAll('.service-check:checked').length > 0) showCard(3); else alert('Please select at least one service.'); };
+            document.getElementById('next3').onclick = () => { if(document.getElementById('overallRating').value) showCard(4); else alert('Please rate the overall service quality.'); };
+            document.getElementById('prev2').onclick = () => showCard(1);
+            document.getElementById('prev3').onclick = () => showCard(2);
+            document.getElementById('prev4').onclick = () => showCard(3);
             
-            // FIXED SUBMIT BUTTON - Uses exact same pattern as your original working code
-            document.getElementById('submitSurvey').addEventListener('click', function() {
+            // WORKING SUBMIT BUTTON - Keeps your original validation logic
+            document.getElementById('submitSurveyBtn').onclick = function() {
                 if (document.getElementById('feedbackForm').checkValidity()) {
                     submitSurveyData();
                 } else {
                     document.getElementById('feedbackForm').reportValidity();
                 }
-            });
+            };
             
-            document.getElementById('newSurvey')?.addEventListener('click', () => location.reload());
+            document.getElementById('newSurveyBtn').onclick = () => location.reload();
         }
         
         function submitSurveyData() {
-            // Collect selected services with per-service ratings
+            // Collect per-service ratings
             const serviceRatings = [];
             document.querySelectorAll('.service-check:checked').forEach(cb => {
                 let svc = cb.value;
-                const parent = cb.closest('.service-item');
-                const starCount = parent.querySelectorAll('.star-rating span.active').length;
-                const comment = parent.querySelector('.svc-comment')?.value || '';
+                const card = cb.closest('.service-card-enhanced');
+                const starCount = card.querySelectorAll('.stars-enhanced span.active').length;
+                const comment = card.querySelector('.svc-comment')?.value || '';
                 serviceRatings.push({ service: svc, rating: starCount, comment: comment });
             });
             
             const surveyData = {
-                clientInfo: {
-                    phone: document.getElementById('clientPhone').value || null,
-                    visitDate: document.getElementById('visitDate').value,
-                    clientType: document.getElementById('clientType').value
-                },
+                clientInfo: { phone: document.getElementById('clientPhone').value, visitDate: document.getElementById('visitDate').value, clientType: document.getElementById('clientType').value },
                 services: serviceRatings.map(s => s.service),
-                ratings: {
-                    overall: document.getElementById('overallRating').value,
-                    staff: document.getElementById('staffRating').value || null,
-                    cleanliness: document.getElementById('cleanlinessRating').value || null,
-                    waitTime: document.getElementById('waitTimeRating').value || null
-                },
-                feedback: {
-                    type: document.getElementById('feedbackType').value,
-                    text: document.getElementById('feedbackText').value,
-                    recommendation: document.getElementById('recommendation').value,
-                    improvements: document.getElementById('improvementSuggestions').value || null,
-                    date: new Date().toISOString()
-                },
-                employeeShoutout: document.getElementById('employeeShoutout').value || null,
+                ratings: { overall: document.getElementById('overallRating').value, staff: document.getElementById('staffRating').value, cleanliness: document.getElementById('cleanlinessRating').value, waitTime: document.getElementById('waitTimeRating').value },
+                feedback: { type: document.getElementById('feedbackType').value, text: document.getElementById('feedbackText').value, recommendation: document.getElementById('recommendation').value, improvements: document.getElementById('improvementSuggestions').value, date: new Date().toISOString() },
+                employeeShoutout: document.getElementById('employeeShoutoutField').value,
                 servicePerceptions: serviceRatings
             };
             
-            // Handle "Other" service
-            const otherVal = document.getElementById('otherService')?.value;
+            const otherVal = document.getElementById('otherServiceSpec')?.value;
             if (otherVal && surveyData.services.includes('Other')) {
                 const idx = surveyData.services.indexOf('Other');
                 if (idx !== -1) surveyData.services[idx] = otherVal;
@@ -402,166 +359,100 @@
             const clientId = 'LUN' + Date.now().toString().slice(-8);
             const businessData = JSON.parse(localStorage.getItem('lunasBusinessData'));
             
-            // Add client
             businessData.clients.push({
-                id: clientId, type: surveyData.clientInfo.clientType, phone: surveyData.clientInfo.phone,
-                visitDate: surveyData.clientInfo.visitDate, services: surveyData.services,
-                rating: parseInt(surveyData.ratings.overall),
+                id: clientId, type: surveyData.clientInfo.clientType, phone: surveyData.clientInfo.phone, visitDate: surveyData.clientInfo.visitDate,
+                services: surveyData.services, rating: parseInt(surveyData.ratings.overall),
                 staffRating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
                 cleanlinessRating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
                 waitTimeRating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
                 employeeShoutout: surveyData.employeeShoutout, submissionDate: new Date().toISOString()
             });
             
-            if (surveyData.clientInfo.clientType === 'new') businessData.newClientsCount++;
-            else businessData.returningClientsCount++;
+            if (surveyData.clientInfo.clientType === 'new') businessData.newClientsCount++; else businessData.returningClientsCount++;
             
-            // Update service counts
-            surveyData.services.forEach(svc => {
-                const existing = businessData.services.find(s => s.name === svc);
-                if (existing) existing.count++;
-                else businessData.services.push({ name: svc, count: 1 });
-            });
-            
-            // Add per-service perceptions
-            surveyData.servicePerceptions.forEach(sp => {
-                businessData.servicePerceptions.push({ clientId, service: sp.service, rating: sp.rating, comment: sp.comment });
-            });
-            
-            // Add employee shoutout
-            if (surveyData.employeeShoutout) {
-                if (!businessData.employeeShoutouts) businessData.employeeShoutouts = [];
-                businessData.employeeShoutouts.push({ clientId, employee: surveyData.employeeShoutout, date: new Date().toISOString() });
-            }
-            
-            // Add feedback
-            businessData.feedback.push({
-                id: clientId, type: surveyData.feedback.type, text: surveyData.feedback.text,
-                recommendation: surveyData.feedback.recommendation, improvements: surveyData.feedback.improvements,
-                employeeShoutout: surveyData.employeeShoutout, date: new Date().toISOString()
-            });
+            surveyData.services.forEach(svc => { const ex = businessData.services.find(s => s.name === svc); if(ex) ex.count++; else businessData.services.push({ name: svc, count: 1 }); });
+            surveyData.servicePerceptions.forEach(sp => businessData.servicePerceptions.push({ clientId, service: sp.service, rating: sp.rating, comment: sp.comment }));
+            if (surveyData.employeeShoutout) businessData.employeeShoutouts.push({ clientId, employee: surveyData.employeeShoutout, date: new Date().toISOString() });
+            businessData.feedback.push({ id: clientId, type: surveyData.feedback.type, text: surveyData.feedback.text, recommendation: surveyData.feedback.recommendation, improvements: surveyData.feedback.improvements, employeeShoutout: surveyData.employeeShoutout, date: new Date().toISOString() });
             
             localStorage.setItem('lunasBusinessData', JSON.stringify(businessData));
             
-            // Show thank you and success message
             document.getElementById('thankYouCard').classList.add('active');
             document.getElementById('card4').classList.remove('active');
             document.getElementById('progressFill').style.width = '100%';
-            showSuccessMessage('✨ Thank you! Your feedback with service ratings has been recorded! ✨');
+            showToast('✨ Thank you! Your feedback with service ratings has been recorded! ✨');
         }
         
-        // Dashboard Functions
-        function loadDashboard() {
-            if (localStorage.getItem('lunasLoggedIn') !== 'true') showLogin();
-            else showDashboard();
-        }
+        // DASHBOARD FUNCTIONS
+        function loadDashboard() { if(localStorage.getItem('lunasLoggedIn') === 'true') showDashboard(); else showLogin(); }
         
         function showLogin() {
-            const loginHTML = `
-                <div class="login-container">
-                    <div class="login-card">
-                        <div style="font-size:3rem; color:var(--primary-color);"><i class="fas fa-chart-line"></i></div>
-                        <div style="font-size:1.8rem; font-weight:700; margin:10px 0;">LUNAS Analytics</div>
-                        <p style="margin-bottom:30px;">Client Feedback Analysis Dashboard</p>
-                        <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Enter admin username"></div>
-                        <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Enter password"></div>
-                        <button class="btn btn-primary" id="loginBtn" style="width:100%;"><i class="fas fa-sign-in-alt"></i> Login to Dashboard</button>
-                        <div class="login-error" id="loginError">Invalid username or password. Try "admin" / "lunas2025"</div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('dashboardSection').innerHTML = loginHTML;
-            document.getElementById('loginBtn').addEventListener('click', function() {
-                if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'lunas2025') {
-                    localStorage.setItem('lunasLoggedIn', 'true');
-                    showDashboard();
-                } else {
-                    document.getElementById('loginError').style.display = 'block';
-                }
-            });
+            document.getElementById('dashboardSection').innerHTML = `<div class="login-container"><div class="login-card"><i class="fas fa-chart-line" style="font-size:3rem; color:var(--primary-color);"></i><h2 style="margin:15px 0;">LUNAS Analytics</h2><p style="margin-bottom:25px;">Client Feedback Analysis Dashboard</p><div class="form-group"><input type="text" id="username" placeholder="Username"></div><div class="form-group"><input type="password" id="password" placeholder="Password"></div><button class="btn btn-primary" id="loginBtn" style="width:100%;">Login to Dashboard</button><div class="login-error" id="loginError">Username: admin | Password: lunas2025</div></div></div>`;
+            document.getElementById('loginBtn').onclick = () => { if(document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'lunas2025') { localStorage.setItem('lunasLoggedIn','true'); showDashboard(); } else document.getElementById('loginError').style.display = 'block'; };
         }
         
         function showDashboard() {
             const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
             const avgRating = data.clients.length ? (data.clients.reduce((a,b)=>a+(b.rating||0),0)/data.clients.length).toFixed(1) : '0.0';
+            const npsScore = data.feedback.filter(f=>f.recommendation==='yes-definitely').length;
             
             // Per-service ratings summary
             const perServiceMap = new Map();
-            (data.servicePerceptions || []).forEach(p => {
-                if (!perServiceMap.has(p.service)) perServiceMap.set(p.service, []);
-                perServiceMap.get(p.service).push(p.rating);
-            });
+            (data.servicePerceptions || []).forEach(p => { if(!perServiceMap.has(p.service)) perServiceMap.set(p.service, []); perServiceMap.get(p.service).push(p.rating); });
             let perServiceHtml = '';
-            for (let [svc, ratings] of perServiceMap.entries()) {
+            for(let [svc, ratings] of perServiceMap.entries()) {
                 const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : 'N/A';
                 perServiceHtml += `<div class="per-service-row"><span><strong>${svc}</strong></span><span style="color:var(--secondary-color);">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))}</span><span>${avg}/5 (${ratings.length})</span></div>`;
             }
             
-            const shoutoutsHtml = (data.employeeShoutouts || []).slice(-5).reverse().map(s => `<div style="padding:12px; background:#fef5e8; border-radius:12px; margin-bottom:10px;"><i class="fas fa-user-check" style="color:var(--secondary-color);"></i> "${s.employee}"<br><small>${new Date(s.date).toLocaleDateString()}</small></div>`).join('') || '<p>No shoutouts yet</p>';
+            const shoutoutsHtml = (data.employeeShoutouts || []).slice(-5).reverse().map(s => `<div style="background:#fef5e8; border-radius:16px; padding:14px; margin-bottom:10px;"><i class="fas fa-user-check" style="color:var(--secondary-color);"></i> "${s.employee}"<br><small>${new Date(s.date).toLocaleDateString()}</small></div>`).join('') || '<p>No shoutouts yet</p>';
             
             const dashboardHTML = `
-                <div class="dashboard-header">
-                    <div><h1 style="font-size:1.8rem;"><i class="fas fa-chart-line"></i> Analytics Dashboard</h1><p>Client Feedback Analysis & Service Insights</p></div>
-                    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
-                </div>
-                <div class="stats-container">
-                    <div class="stat-card"><div class="stat-icon clients"><i class="fas fa-users"></i></div><div class="stat-info"><h3>${data.clients.length}</h3><p>Total Clients Surveyed</p></div></div>
-                    <div class="stat-card"><div class="stat-icon rating"><i class="fas fa-star"></i></div><div class="stat-info"><h3>${avgRating}</h3><p>Average Rating</p></div></div>
-                    <div class="stat-card"><div class="stat-icon services"><i class="fas fa-spa"></i></div><div class="stat-info"><h3>${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</h3><p>Services Received</p></div></div>
-                    <div class="stat-card"><div class="stat-icon feedback"><i class="fas fa-comments"></i></div><div class="stat-info"><h3>${data.feedback.length}</h3><p>Feedback Received</p></div></div>
-                </div>
-                <div class="dashboard-grid">
-                    <div class="dashboard-card"><h2><i class="fas fa-chart-pie"></i> Client Demographics</h2><div class="chart-container"><canvas id="clientChart"></canvas></div></div>
-                    <div class="dashboard-card"><h2><i class="fas fa-chart-bar"></i> Most Received Services</h2><div class="chart-container"><canvas id="serviceChart"></canvas></div></div>
-                </div>
-                <div class="dashboard-card"><h2><i class="fas fa-star-half-alt"></i> Per-Service Satisfaction Ratings</h2>${perServiceHtml || '<p>No per-service ratings yet. Submit a survey with service ratings!</p>'}</div>
-                <div class="dashboard-grid">
-                    <div class="dashboard-card"><h2><i class="fas fa-medal"></i> Employee Shoutouts</h2>${shoutoutsHtml}</div>
-                    <div class="dashboard-card"><h2><i class="fas fa-comments"></i> Recent Client Feedback</h2>${data.feedback.slice(-5).reverse().map(fb => `<div class="feedback-item ${fb.type}" style="border-left-color:${fb.type==='compliment'?'#2ecc71':fb.type==='suggestion'?'#f39c12':'#e74c3c'}"><div class="feedback-header"><strong>${fb.type.toUpperCase()}</strong> <small>${new Date(fb.date).toLocaleDateString()}</small></div><div>${fb.text.substring(0,120)}${fb.text.length>120?'...':''}</div><div><small>Recommendation: ${fb.recommendation?.replace('-',' ') || 'N/A'}</small></div></div>`).join('') || '<p>No feedback yet</p>'}</div>
-                </div>
-                <div class="dashboard-card"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button class="btn btn-primary" id="exportBtn"><i class="fas fa-download"></i> Export All Data</button><button class="btn btn-danger" id="deleteBtn"><i class="fas fa-trash-alt"></i> Delete All Responses</button><button class="btn btn-secondary" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh Dashboard</button></div></div>
-                <div style="text-align:center; padding:20px 0; color:var(--text-light);"><p>LUNAS Client Feedback Analytics | Last updated: ${new Date().toLocaleString()}</p></div>
+                <div class="dashboard-header"><div><h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1><p>Client Feedback Analysis & Service Insights</p></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
+                <div class="stats-grid"><div class="stat-card-modern"><div class="stat-number">${data.clients.length}</div><div class="stat-label">Total Clients Surveyed</div><small>${data.newClientsCount} new · ${data.returningClientsCount} returning</small></div><div class="stat-card-modern"><div class="stat-number">${avgRating}</div><div class="stat-label">⭐ Average Rating</div><small>out of 5 stars</small></div><div class="stat-card-modern"><div class="stat-number">${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</div><div class="stat-label">Services Received</div></div><div class="stat-card-modern"><div class="stat-number">${data.feedback.length}</div><div class="stat-label">Feedback Received</div></div></div>
+                <div class="dashboard-grid"><div class="dashboard-card-modern"><h2><i class="fas fa-chart-pie"></i> Client Demographics</h2><div class="chart-container"><canvas id="clientChart"></canvas></div></div><div class="dashboard-card-modern"><h2><i class="fas fa-chart-bar"></i> Most Received Services</h2><div class="chart-container"><canvas id="serviceChart"></canvas></div></div></div>
+                <div class="dashboard-card-modern"><h2><i class="fas fa-star-half-alt"></i> Per-Service Satisfaction Ratings</h2>${perServiceHtml || '<p>No per-service ratings yet. Submit a survey with service ratings!</p>'}</div>
+                <div class="dashboard-grid"><div class="dashboard-card-modern"><h2><i class="fas fa-medal"></i> Employee Shoutouts</h2>${shoutoutsHtml}</div><div class="dashboard-card-modern"><h2><i class="fas fa-comment-dots"></i> Recent Client Feedback</h2>${data.feedback.slice(-5).reverse().map(fb => `<div class="feedback-item-modern" style="border-left-color:${fb.type==='compliment'?'#2ecc71':fb.type==='suggestion'?'#f39c12':'#e74c3c'}"><strong>${fb.type.toUpperCase()}</strong><br>${fb.text.substring(0,120)}${fb.text.length>120?'...':''}<br><small>Recommendation: ${fb.recommendation?.replace('-',' ') || 'N/A'}</small></div>`).join('') || '<p>No feedback yet</p>'}</div></div>
+                <div class="dashboard-card-modern"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button class="btn btn-primary" id="exportBtn"><i class="fas fa-download"></i> Export to CSV</button><button class="btn btn-primary" id="exportPdfBtn" style="background:linear-gradient(135deg, #dc3545, #c82333);"><i class="fas fa-file-pdf"></i> Export to PDF</button><button class="btn btn-danger" id="deleteBtn"><i class="fas fa-trash-alt"></i> Delete All Responses</button><button class="btn btn-secondary" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
+                <div style="text-align:center; padding:20px; color:var(--text-light);"><p>LUNAS Client Feedback Analytics | Last updated: ${new Date().toLocaleString()}</p></div>
             `;
             document.getElementById('dashboardSection').innerHTML = dashboardHTML;
             
-            document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.removeItem('lunasLoggedIn'); loadDashboard(); });
-            document.getElementById('exportBtn').addEventListener('click', () => exportData());
-            document.getElementById('deleteBtn').addEventListener('click', () => deleteAllResponses());
-            document.getElementById('refreshBtn').addEventListener('click', () => showDashboard());
+            document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('lunasLoggedIn'); loadDashboard(); };
+            document.getElementById('exportBtn').onclick = () => exportToCSV();
+            document.getElementById('exportPdfBtn').onclick = () => exportToPDF();
+            document.getElementById('deleteBtn').onclick = () => { if(confirm('⚠️ Delete ALL data? This cannot be undone.')) { localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], servicePerceptions:[], employeeShoutouts:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() })); showDashboard(); alert('✅ All data deleted.'); } };
+            document.getElementById('refreshBtn').onclick = () => showDashboard();
             
-            // Initialize charts
             setTimeout(() => {
-                const newClients = data.clients.filter(c => c.type === 'new').length;
-                const returningClients = data.clients.filter(c => c.type === 'returning').length;
-                new Chart(document.getElementById('clientChart'), { type: 'doughnut', data: { labels: ['New Clients', 'Returning Clients'], datasets: [{ data: [newClients, returningClients], backgroundColor: ['#006850', '#FBB040'] }] }, options: { responsive: true, maintainAspectRatio: true } });
-                const topServices = [...data.services].sort((a,b)=>b.count-a.count).slice(0,6);
-                if (topServices.length) new Chart(document.getElementById('serviceChart'), { type: 'bar', data: { labels: topServices.map(s=>s.name), datasets: [{ label: 'Times Received', data: topServices.map(s=>s.count), backgroundColor: '#006850', borderRadius: 8 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+                const newC = data.clients.filter(c=>c.type==='new').length;
+                const retC = data.clients.filter(c=>c.type==='returning').length;
+                new Chart(document.getElementById('clientChart'), { type: 'doughnut', data: { labels: ['New Clients', 'Returning Clients'], datasets: [{ data: [newC, retC], backgroundColor: ['#006850', '#FBB040'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } } });
+                const topSvcs = data.services.sort((a,b)=>b.count-a.count).slice(0,6);
+                if(topSvcs.length) new Chart(document.getElementById('serviceChart'), { type: 'bar', data: { labels: topSvcs.map(s=>s.name), datasets: [{ label: 'Times Received', data: topSvcs.map(s=>s.count), backgroundColor: '#006850', borderRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
             }, 100);
         }
         
-        function exportData() {
+        function exportToCSV() {
             const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
-            let csv = 'LUNAS Beauty Salon - Client Feedback Data\n\n';
-            csv += 'CLIENT DATA\nClient ID,Type,Phone,Visit Date,Services Received,Overall Rating,Staff Rating,Cleanliness Rating,Wait Time Rating,Employee Shoutout\n';
-            data.clients.forEach(c => { csv += `${c.id},${c.type},${c.phone || ''},${c.visitDate},"${c.services.join(', ')}",${c.rating},${c.staffRating || ''},${c.cleanlinessRating || ''},${c.waitTimeRating || ''},"${c.employeeShoutout || ''}"\n`; });
-            csv += '\nSERVICE DATA\nService,Number of Times Received\n';
+            let csv = "LUNAS Beauty Salon - Client Feedback Data\n\n";
+            csv += "CLIENT DATA\nClient ID,Type,Phone,Visit Date,Services,Overall Rating,Staff Rating,Cleanliness,Wait Time,Employee Shoutout\n";
+            data.clients.forEach(c => { csv += `${c.id},${c.type},${c.phone || ''},${c.visitDate},"${c.services.join('; ')}",${c.rating},${c.staffRating || ''},${c.cleanlinessRating || ''},${c.waitTimeRating || ''},"${c.employeeShoutout || ''}"\n`; });
+            csv += "\nSERVICE DATA\nService,Count\n";
             data.services.forEach(s => { csv += `${s.name},${s.count}\n`; });
-            csv += '\nFEEDBACK DATA\nType,Feedback,Date,Client ID,Recommendation\n';
-            data.feedback.forEach(f => { csv += `${f.type},"${f.text}",${f.date},${f.id},${f.recommendation || ''}\n`; });
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'lunas_client_feedback_data.csv';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            alert('✅ Data exported successfully!');
+            const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_feedback_data.csv'; a.click(); alert('✅ CSV exported!');
         }
         
-        function deleteAllResponses() {
-            if (!confirm('⚠️ WARNING: This will DELETE ALL client responses! Cannot be undone. Proceed?')) return;
-            const initialData = { clients: [], services: [], feedback: [], servicePerceptions: [], employeeShoutouts: [], newClientsCount: 0, returningClientsCount: 0, startDate: new Date().toISOString() };
-            localStorage.setItem('lunasBusinessData', JSON.stringify(initialData));
-            showDashboard();
-            alert('✅ All client responses have been deleted successfully!');
+        function exportToPDF() {
+            const dashboard = document.querySelector('#dashboardSection .dashboard-header').cloneNode(true);
+            const stats = document.querySelector('.stats-grid').cloneNode(true);
+            const cards = document.querySelectorAll('.dashboard-card-modern');
+            const printContent = document.createElement('div');
+            printContent.appendChild(dashboard);
+            printContent.appendChild(stats);
+            cards.forEach(c => printContent.appendChild(c.cloneNode(true)));
+            const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: 'lunas_dashboard_report.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            html2pdf().set(opt).from(printContent).save();
         }
         
         loadSurveyTool();
