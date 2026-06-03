@@ -325,9 +325,10 @@
             document.getElementById('prev3').onclick = () => showCard(2);
             document.getElementById('prev4').onclick = () => showCard(3);
             
-            // FIXED SUBMIT BUTTON
+            // FIXED SUBMIT BUTTON - Using same pattern as your original working code
             document.getElementById('submitSurveyBtn').onclick = function() {
-                if(!document.getElementById('feedbackType').value || !document.getElementById('feedbackText').value || !document.getElementById('recommendation').value) {
+                // Validate required fields like your original code
+                if (!document.getElementById('feedbackType').value || !document.getElementById('feedbackText').value || !document.getElementById('recommendation').value) {
                     alert('Please complete all required feedback fields.');
                     return;
                 }
@@ -337,87 +338,140 @@
             document.getElementById('newSurveyBtn').onclick = () => location.reload();
         }
         
+        // FIXED SUBMIT FUNCTION - Using your original working logic
         function submitSurveyData() {
-            // Collect selected services with per-service ratings
-            const selectedServices = [];
-            const servicePerceptions = [];
+            // Collect all survey data (matching your original structure)
+            const surveyData = {
+                clientInfo: {
+                    phone: document.getElementById('clientPhone').value || null,
+                    visitDate: document.getElementById('visitDate').value,
+                    clientType: document.getElementById('clientType').value
+                },
+                services: [],
+                ratings: {
+                    overall: document.getElementById('overallRating').value,
+                    staff: document.getElementById('staffRating').value || null,
+                    cleanliness: document.getElementById('cleanlinessRating').value || null,
+                    waitTime: document.getElementById('waitTimeRating').value || null
+                },
+                feedback: {
+                    type: document.getElementById('feedbackType').value,
+                    text: document.getElementById('feedbackText').value,
+                    recommendation: document.getElementById('recommendation').value,
+                    improvements: document.getElementById('improvementSuggestions').value || null,
+                    date: new Date().toISOString()
+                },
+                employeeShoutout: document.getElementById('employeeShoutout').value || null,
+                servicePerceptions: []
+            };
             
+            // Collect selected services with per-service ratings
             document.querySelectorAll('.service-check:checked').forEach(cb => {
                 let svc = cb.value;
                 const card = cb.closest('.service-card');
                 const starCount = card.querySelectorAll('.star.active').length;
                 const comment = card.querySelector('.svc-comment')?.value || '';
-                selectedServices.push(svc);
-                servicePerceptions.push({ service: svc, rating: starCount, comment: comment });
+                surveyData.services.push(svc);
+                surveyData.servicePerceptions.push({ service: svc, rating: starCount, comment: comment });
             });
             
             // Handle "Other" service
             const otherVal = document.getElementById('otherServiceSpec')?.value;
-            if(otherVal && selectedServices.includes('Other')) {
-                const idx = selectedServices.indexOf('Other');
-                if(idx !== -1) selectedServices[idx] = otherVal;
-                const pIdx = servicePerceptions.findIndex(p => p.service === 'Other');
-                if(pIdx !== -1) servicePerceptions[pIdx].service = otherVal;
+            if (otherVal && surveyData.services.includes('Other')) {
+                const idx = surveyData.services.indexOf('Other');
+                if (idx !== -1) surveyData.services[idx] = otherVal;
+                const pIdx = surveyData.servicePerceptions.findIndex(p => p.service === 'Other');
+                if (pIdx !== -1) surveyData.servicePerceptions[pIdx].service = otherVal;
             }
             
-            const shoutout = document.getElementById('employeeShoutout')?.value || null;
+            // Generate client ID
             const clientId = 'LUN' + Date.now().toString().slice(-8);
-            const business = JSON.parse(localStorage.getItem('lunasBusinessData'));
             
-            // Add client
-            business.clients.push({
-                id: clientId, 
-                type: document.getElementById('clientType').value, 
-                phone: document.getElementById('clientPhone').value,
-                visitDate: document.getElementById('visitDate').value, 
-                services: selectedServices,
-                rating: parseInt(document.getElementById('overallRating').value),
-                staffRating: parseInt(document.getElementById('staffRating').value) || null,
-                cleanlinessRating: parseInt(document.getElementById('cleanlinessRating').value) || null,
-                waitTimeRating: parseInt(document.getElementById('waitTimeRating').value) || null,
-                employeeShoutout: shoutout, 
-                serviceDetails: servicePerceptions, 
-                submissionDate: new Date().toISOString()
-            });
+            // Save to business data system (using your original save function pattern)
+            saveToBusinessData(surveyData, clientId);
             
-            // Update counts
-            if(document.getElementById('clientType').value === 'new') business.newClientsCount++; 
-            else business.returningClientsCount++;
-            
-            // Update service popularity
-            selectedServices.forEach(svc => { 
-                const ex = business.services.find(s => s.name === svc); 
-                if(ex) ex.count++; 
-                else business.services.push({ name: svc, count: 1 }); 
-            });
-            
-            // Store per-service perceptions
-            servicePerceptions.forEach(sp => business.servicePerceptions.push({ clientId, service: sp.service, rating: sp.rating, comment: sp.comment }));
-            
-            // Store employee shoutout
-            if(shoutout) {
-                if(!business.employeeShoutouts) business.employeeShoutouts = [];
-                business.employeeShoutouts.push({ clientId, employee: shoutout, date: new Date().toISOString() });
-            }
-            
-            // Store feedback
-            business.feedback.push({ 
-                id: clientId, 
-                type: document.getElementById('feedbackType').value, 
-                text: document.getElementById('feedbackText').value, 
-                recommendation: document.getElementById('recommendation').value, 
-                improvements: document.getElementById('improvementSuggestions').value, 
-                employeeShoutout: shoutout, 
-                date: new Date().toISOString() 
-            });
-            
-            localStorage.setItem('lunasBusinessData', JSON.stringify(business));
-            
-            // Show thank you and success message
+            // Show thank you card
             document.getElementById('thankYouCard').classList.add('active');
             document.getElementById('card4').classList.remove('active');
+            
+            // Update progress bar
             document.getElementById('progressFill').style.width = '100%';
-            showSuccessMessage('✨ Thank you! Your feedback with service ratings has been recorded! ✨');
+            
+            // Show success toast message
+            showSuccessMessage('✨ Thank you for rating each service! Your feedback helps us improve! ✨');
+        }
+        
+        function saveToBusinessData(surveyData, clientId) {
+            const businessData = JSON.parse(localStorage.getItem('lunasBusinessData'));
+            
+            // Add client entry
+            const clientEntry = {
+                id: clientId,
+                type: surveyData.clientInfo.clientType,
+                phone: surveyData.clientInfo.phone,
+                visitDate: surveyData.clientInfo.visitDate,
+                services: surveyData.services,
+                rating: parseInt(surveyData.ratings.overall),
+                staffRating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
+                cleanlinessRating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
+                waitTimeRating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
+                employeeShoutout: surveyData.employeeShoutout,
+                serviceDetails: surveyData.servicePerceptions,
+                submissionDate: new Date().toISOString()
+            };
+            
+            businessData.clients.push(clientEntry);
+            
+            // Update client counts
+            if (surveyData.clientInfo.clientType === 'new') {
+                businessData.newClientsCount++;
+            } else {
+                businessData.returningClientsCount++;
+            }
+            
+            // Update service counts
+            surveyData.services.forEach(serviceName => {
+                const existingService = businessData.services.find(s => s.name === serviceName);
+                if (existingService) {
+                    existingService.count++;
+                } else {
+                    businessData.services.push({ name: serviceName, count: 1 });
+                }
+            });
+            
+            // Add per-service perceptions
+            surveyData.servicePerceptions.forEach(sp => {
+                businessData.servicePerceptions.push({
+                    clientId: clientId,
+                    service: sp.service,
+                    rating: sp.rating,
+                    comment: sp.comment
+                });
+            });
+            
+            // Add employee shoutout
+            if (surveyData.employeeShoutout) {
+                if (!businessData.employeeShoutouts) businessData.employeeShoutouts = [];
+                businessData.employeeShoutouts.push({
+                    clientId: clientId,
+                    employee: surveyData.employeeShoutout,
+                    date: new Date().toISOString()
+                });
+            }
+            
+            // Add feedback
+            businessData.feedback.push({
+                id: clientId,
+                type: surveyData.feedback.type,
+                text: surveyData.feedback.text,
+                recommendation: surveyData.feedback.recommendation,
+                improvements: surveyData.feedback.improvements,
+                employeeShoutout: surveyData.employeeShoutout,
+                date: new Date().toISOString()
+            });
+            
+            localStorage.setItem('lunasBusinessData', JSON.stringify(businessData));
+            console.log('Survey data saved:', businessData);
         }
         
         // Dashboard functions
@@ -440,7 +494,6 @@
             const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
             const avgRating = data.clients.length ? (data.clients.reduce((a,b)=>a+(b.rating||0),0)/data.clients.length).toFixed(1) : '0.0';
             
-            // Aggregate per-service ratings
             const perServiceMap = new Map();
             (data.servicePerceptions || []).forEach(p => {
                 if(!perServiceMap.has(p.service)) perServiceMap.set(p.service, { ratings: [], comments: [] });
