@@ -6,7 +6,6 @@
     <title>LUNAS Beauty Salon - Client Survey & Analytics System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #006850;
@@ -21,8 +20,6 @@
             --danger-color: #e74c3c;
             --success-color: #2ecc71;
             --warning-color: #f39c12;
-            --info-color: #3498db;
-            --purple: #9b59b6;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', 'Segoe UI', sans-serif; }
@@ -63,7 +60,7 @@
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(0,104,80,0.1); }
         textarea { min-height: 100px; resize: vertical; }
         
-        /* Per-Service Rating Cards - Clickable */
+        /* Per-Service Rating Cards */
         .services-enhanced { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
         .service-card-enh { background: #fafcff; border-radius: 20px; border: 2px solid var(--border-color); transition: all 0.25s ease; overflow: hidden; cursor: pointer; }
         .service-card-enh:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
@@ -278,7 +275,7 @@
             document.getElementById('visitDate').value = today;
             document.getElementById('visitDate').max = today;
             
-            // Make whole service card clickable
+            // Make service cards clickable
             document.querySelectorAll('.service-card-enh').forEach(card => {
                 const chk = card.querySelector('.service-check');
                 card.addEventListener('click', (e) => {
@@ -291,7 +288,7 @@
                 chk.addEventListener('change', (e) => { e.stopPropagation(); if (chk.checked) card.classList.add('selected'); else card.classList.remove('selected'); });
             });
             
-            // Star ratings per service
+            // Star ratings
             document.querySelectorAll('.stars-enh').forEach(stars => {
                 const starSpans = stars.querySelectorAll('span');
                 starSpans.forEach(star => {
@@ -314,7 +311,7 @@
             document.getElementById('prev3').onclick = () => showCard(2);
             document.getElementById('prev4').onclick = () => showCard(3);
             
-            // EXACT SUBMIT LOGIC FROM YOUR ORIGINAL WORKING CODE
+            // WORKING SUBMIT - EXACTLY AS YOUR ORIGINAL CODE
             document.getElementById('submitSurveyBtn').addEventListener('click', function() {
                 if (document.getElementById('feedbackForm').checkValidity()) {
                     submitSurveyData();
@@ -401,20 +398,18 @@
             
             const shoutoutsHtml = (data.employeeShoutouts || []).slice(-5).reverse().map(s => `<div style="background:#fef5e8; border-radius:16px; padding:14px; margin-bottom:10px;"><i class="fas fa-user-check" style="color:var(--secondary-color);"></i> "${s.employee}"<br><small>${new Date(s.date).toLocaleDateString()}</small></div>`).join('') || '<p>No shoutouts yet</p>';
             
-            const dashboardHTML = `
+            document.getElementById('dashboardSection').innerHTML = `
                 <div class="dashboard-header"><div><h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1><p>Client Feedback Analysis & Service Insights</p></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
                 <div class="stats-grid"><div class="stat-card"><div class="stat-number">${data.clients.length}</div><div class="stat-label">Total Clients</div><small>${data.newClientsCount} new · ${data.returningClientsCount} returning</small></div><div class="stat-card"><div class="stat-number">${avgRating}</div><div class="stat-label">⭐ Average Rating</div></div><div class="stat-card"><div class="stat-number">${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</div><div class="stat-label">Services Used</div></div><div class="stat-card"><div class="stat-number">${data.feedback.length}</div><div class="stat-label">Feedbacks</div></div></div>
                 <div class="dashboard-grid"><div class="dashboard-card"><h2><i class="fas fa-chart-pie"></i> Client Demographics</h2><div class="chart-container"><canvas id="clientChart"></canvas></div></div><div class="dashboard-card"><h2><i class="fas fa-chart-bar"></i> Most Popular Services</h2><div class="chart-container"><canvas id="serviceChart"></canvas></div></div></div>
                 <div class="dashboard-card"><h2><i class="fas fa-star-half-alt"></i> Per-Service Satisfaction Ratings</h2>${perServiceHtml || '<p>No per-service ratings yet</p>'}</div>
                 <div class="dashboard-grid"><div class="dashboard-card"><h2><i class="fas fa-medal"></i> Employee Shoutouts</h2>${shoutoutsHtml}</div><div class="dashboard-card"><h2><i class="fas fa-comment-dots"></i> Recent Feedback</h2>${data.feedback.slice(-5).reverse().map(fb => `<div class="feedback-item" style="border-left-color:${fb.type==='compliment'?'#2ecc71':fb.type==='suggestion'?'#f39c12':'#e74c3c'}"><strong>${fb.type.toUpperCase()}</strong><br>${fb.text.substring(0,100)}${fb.text.length>100?'...':''}<br><small>👍 ${fb.recommendation?.replace('-',' ')}</small></div>`).join('') || '<p>No feedback yet</p>'}</div></div>
-                <div class="dashboard-card"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-download"></i> Export CSV</button><button class="btn btn-primary" id="exportPdfBtn" style="background:linear-gradient(135deg, #dc3545, #c82333);"><i class="fas fa-file-pdf"></i> Export PDF</button><button class="btn btn-danger" id="deleteAllBtn"><i class="fas fa-trash-alt"></i> Delete All</button><button class="btn btn-secondary" id="refreshDashBtn"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
+                <div class="dashboard-card"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-download"></i> Export CSV</button><button class="btn btn-danger" id="deleteAllBtn"><i class="fas fa-trash-alt"></i> Delete All</button><button class="btn btn-secondary" id="refreshDashBtn"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
                 <div style="text-align:center; padding:20px; color:var(--text-light);"><p>LUNAS Analytics | Updated: ${new Date().toLocaleString()}</p></div>
             `;
-            document.getElementById('dashboardSection').innerHTML = dashboardHTML;
             
             document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('lunasLoggedIn'); loadDashboard(); };
-            document.getElementById('exportCsvBtn').onclick = () => exportToCSV();
-            document.getElementById('exportPdfBtn').onclick = () => exportToPDF();
+            document.getElementById('exportCsvBtn').onclick = () => { let csv = "Client,Rating,Shoutout\n"; data.clients.forEach(c => csv += `${c.id},${c.rating},"${c.employeeShoutout || ''}"\n`); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_data.csv'; a.click(); alert('✅ CSV exported!'); };
             document.getElementById('deleteAllBtn').onclick = () => { if(confirm('⚠️ Delete ALL data? Cannot be undone.')) { localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], servicePerceptions:[], employeeShoutouts:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() })); showDashboard(); alert('✅ All data deleted.'); } };
             document.getElementById('refreshDashBtn').onclick = () => showDashboard();
             
@@ -425,24 +420,6 @@
                 const topSvcs = data.services.sort((a,b)=>b.count-a.count).slice(0,6);
                 if(topSvcs.length) new Chart(document.getElementById('serviceChart'), { type: 'bar', data: { labels: topSvcs.map(s=>s.name), datasets: [{ label: 'Times Received', data: topSvcs.map(s=>s.count), backgroundColor: '#006850', borderRadius: 10 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
             }, 100);
-        }
-        
-        function exportToCSV() {
-            const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
-            let csv = "Client ID,Type,Rating,Shoutout,Services\n";
-            data.clients.forEach(c => csv += `${c.id},${c.type},${c.rating},"${c.employeeShoutout || ''}","${c.services.join('; ')}"\n`);
-            const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_data.csv'; a.click(); alert('✅ CSV exported!');
-        }
-        
-        function exportToPDF() {
-            const dashboard = document.querySelector('#dashboardSection .dashboard-header').cloneNode(true);
-            const stats = document.querySelector('.stats-grid').cloneNode(true);
-            const cards = document.querySelectorAll('.dashboard-card');
-            const printContent = document.createElement('div');
-            printContent.appendChild(dashboard);
-            printContent.appendChild(stats);
-            cards.forEach(c => printContent.appendChild(c.cloneNode(true)));
-            html2pdf().set({ margin: 0.5, filename: 'lunas_dashboard.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } }).from(printContent).save();
         }
         
         loadSurveyTool();
