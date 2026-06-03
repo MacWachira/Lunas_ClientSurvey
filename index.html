@@ -8,97 +8,99 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #006850;
-            --secondary-color: #FBB040;
-            --dark-color: #000000;
-            --light-color: #FFFFFF;
-            --light-bg: #f0f4f8;
-            --card-bg: #ffffff;
-            --text-dark: #1a2a3a;
-            --text-light: #5a6e7c;
-            --border-color: #e2e8f0;
-            --danger-color: #e74c3c;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --info-color: #3498db;
-            --purple: #9b59b6;
-            --coral: #ff6b6b;
-            --teal: #1abc9c;
+            --primary: #006850;
+            --primary-light: #00875a;
+            --secondary: #FBB040;
+            --secondary-dark: #e5a030;
+            --dark: #1a2a3a;
+            --light: #f8fafc;
+            --white: #ffffff;
+            --gray: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --purple: #8b5cf6;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
         }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif; }
-        body { background: linear-gradient(145deg, #f0f4f8 0%, #e8edf2 100%); min-height: 100vh; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Montserrat', system-ui, sans-serif; }
+        body { background: linear-gradient(145deg, #f1f5f9 0%, #e6edf4 100%); min-height: 100vh; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 24px; }
         
         /* Header */
-        .main-header { background: linear-gradient(135deg, var(--primary-color), #00875a); color: white; padding: 20px 0; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
-        .header-content { max-width: 1400px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .logo { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: white; letter-spacing: 2px; text-transform: uppercase; }
-        .tagline { font-size: 1rem; color: rgba(255,255,255,0.9); letter-spacing: 4px; text-transform: uppercase; margin-top: 5px; }
-        .nav-buttons { display: flex; gap: 15px; }
-        .nav-btn { padding: 12px 25px; background-color: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 40px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 10px; color: white; }
-        .nav-btn:hover { background-color: rgba(255,255,255,0.25); transform: translateY(-2px); }
-        .nav-btn.active { background-color: var(--secondary-color); color: var(--dark-color); }
+        .main-header { background: linear-gradient(115deg, var(--primary), var(--primary-light)); padding: 24px 0; margin-bottom: 32px; box-shadow: 0 15px 30px -12px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+        .main-header::before { content: ''; position: absolute; top: -30%; right: -10%; width: 50%; height: 150%; background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%); transform: rotate(20deg); }
+        .header-content { max-width: 1300px; margin: 0 auto; padding: 0 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; position: relative; z-index: 2; }
+        .logo { font-family: 'Playfair Display', serif; font-size: 2.6rem; font-weight: 800; background: linear-gradient(135deg, #fff, #FFE4B5); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .tagline { font-size: 0.85rem; letter-spacing: 4px; color: rgba(255,255,255,0.85); margin-top: 6px; }
+        .nav-btn { padding: 12px 28px; border-radius: 40px; font-weight: 600; background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.25); cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; color: white; }
+        .nav-btn.active { background: var(--secondary); color: #1e2a2a; border-color: transparent; box-shadow: 0 8px 20px rgba(251,176,64,0.3); transform: translateY(-2px); }
+        .nav-btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.25); }
         
-        /* Survey Cards */
-        .survey-card { background: var(--card-bg); border-radius: 28px; padding: 40px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1); margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.5); display: none; }
-        .survey-card.active { display: block; animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        /* Survey Cards - Modern Glassmorphism */
+        .survey-card { background: var(--white); border-radius: 36px; padding: 44px 48px; box-shadow: 0 25px 45px -12px rgba(0,0,0,0.12); backdrop-filter: blur(0px); transition: all 0.4s; display: none; border: 1px solid rgba(255,255,255,0.6); }
+        .survey-card.active { display: block; animation: floatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes floatIn { 0% { opacity: 0; transform: scale(0.97) translateY(25px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
         
-        .progress-container { margin-bottom: 35px; }
-        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), #ff8c42); width: 0%; transition: width 0.5s ease; border-radius: 10px; }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 20px; overflow: hidden; margin-bottom: 35px; }
+        .progress-fill { height: 100%; background: linear-gradient(95deg, var(--primary), var(--secondary), #FFB347); border-radius: 20px; transition: width 0.5s cubic-bezier(0.2,0.9,0.4,1.2); width: 0%; }
         
-        .survey-header { text-align: center; margin-bottom: 40px; padding: 35px; background: linear-gradient(135deg, rgba(0,104,80,0.08), rgba(251,176,64,0.08)); border-radius: 28px; }
-        .survey-title { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; }
+        .survey-header { text-align: center; margin-bottom: 35px; padding: 28px; background: linear-gradient(135deg, rgba(0,104,80,0.06), rgba(251,176,64,0.06)); border-radius: 32px; }
+        .survey-title { font-size: 2.3rem; color: var(--primary); margin-bottom: 12px; }
         
-        .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin: 20px 0; }
-        .service-item { background: #f8fafc; border-radius: 16px; padding: 16px; border: 1px solid var(--border-color); transition: all 0.2s; }
-        .service-item:hover { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,104,80,0.1); }
-        .service-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-        .service-header input { width: 20px; height: 20px; margin: 0; }
-        .service-stars { display: flex; gap: 6px; margin: 10px 0 8px 28px; }
-        .service-stars span { font-size: 1.4rem; cursor: pointer; color: #cbd5e0; transition: 0.1s; }
-        .service-stars span.active, .service-stars span:hover { color: var(--secondary-color); text-shadow: 0 0 3px rgba(251,176,64,0.4); }
-        .service-comment-input { margin-left: 28px; margin-top: 8px; }
-        .service-comment-input input { width: 100%; padding: 10px 14px; border-radius: 40px; border: 1px solid var(--border-color); font-size: 0.85rem; }
+        /* Modern Form Elements */
+        .form-group { margin-bottom: 28px; }
+        label { font-weight: 600; margin-bottom: 10px; display: block; color: var(--dark); font-size: 0.9rem; }
+        input, select, textarea { width: 100%; padding: 16px 20px; border: 2px solid var(--border); border-radius: 24px; font-size: 1rem; transition: all 0.2s; background: var(--white); }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,104,80,0.1); }
+        textarea { resize: vertical; min-height: 100px; }
         
-        .rating-option { flex: 1; text-align: center; padding: 14px 10px; background: #f8fafc; border-radius: 50px; cursor: pointer; transition: all 0.2s; border: 2px solid var(--border-color); }
-        .rating-option.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); transform: scale(1.02); }
+        /* Services Grid - Clickable Cards */
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; margin: 25px 0; }
+        .service-card { background: var(--light); border-radius: 24px; padding: 18px 20px; border: 2px solid var(--border); transition: all 0.25s ease; cursor: pointer; }
+        .service-card:hover { border-color: var(--primary); background: white; transform: translateY(-3px); box-shadow: 0 12px 24px -12px rgba(0,104,80,0.2); }
+        .service-card.selected { border-color: var(--primary); background: rgba(0,104,80,0.03); }
+        .service-check { width: 20px; height: 20px; margin-right: 14px; cursor: pointer; accent-color: var(--primary); }
+        .service-name { font-weight: 700; font-size: 1rem; cursor: pointer; flex: 1; }
+        .service-rating-area { margin-top: 16px; margin-left: 34px; display: none; }
+        .service-card.selected .service-rating-area { display: block; }
+        .star-group { display: flex; gap: 8px; margin-bottom: 12px; }
+        .star-group span { font-size: 1.6rem; cursor: pointer; color: #cbd5e1; transition: 0.1s; }
+        .star-group span.active, .star-group span:hover { color: var(--secondary); text-shadow: 0 0 4px rgba(251,176,64,0.5); }
+        .service-comment-input input { padding: 12px 16px; font-size: 0.9rem; border-radius: 40px; background: white; }
         
-        .btn { padding: 14px 30px; border-radius: 50px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; display: inline-flex; align-items: center; gap: 10px; justify-content: center; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary-color), #00875a); color: white; box-shadow: 0 4px 12px rgba(0,104,80,0.25); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,104,80,0.35); }
-        .btn-secondary { background: #e2e8f0; color: #2d3a4a; }
-        .btn-danger { background: linear-gradient(135deg, var(--danger-color), #c0392b); color: white; }
+        /* Rating Options */
+        .rating-container { display: flex; gap: 14px; flex-wrap: wrap; margin: 15px 0; }
+        .rating-option { flex: 1; text-align: center; padding: 14px 12px; background: var(--light); border-radius: 50px; cursor: pointer; transition: all 0.2s; border: 2px solid var(--border); font-weight: 500; }
+        .rating-option.selected { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.02); box-shadow: 0 6px 14px rgba(0,104,80,0.2); }
         
-        .btn-container { display: flex; justify-content: space-between; margin-top: 40px; gap: 20px; }
-        .thank-you-card { text-align: center; padding: 50px; }
-        .social-icons { display: flex; justify-content: center; gap: 30px; margin: 30px 0; flex-wrap: wrap; }
-        .social-circle { width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; }
+        /* Buttons */
+        .btn-container { display: flex; justify-content: space-between; gap: 20px; margin-top: 45px; }
+        .btn { padding: 16px 36px; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.25s; border: none; display: inline-flex; align-items: center; gap: 12px; justify-content: center; }
+        .btn-primary { background: linear-gradient(105deg, var(--primary), var(--primary-light)); color: white; box-shadow: 0 8px 20px rgba(0,104,80,0.25); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,104,80,0.3); }
+        .btn-secondary { background: #f1f5f9; color: #2d3a4a; border: 1px solid var(--border); }
+        .btn-secondary:hover { background: #e6edf4; transform: translateY(-2px); }
+        .btn-danger { background: linear-gradient(105deg, var(--danger), #dc2626); color: white; }
+        
+        .thank-you-card { text-align: center; padding: 55px; }
+        .social-circle { width: 65px; height: 65px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto; }
         .instagram { background: linear-gradient(45deg, #405DE6, #E1306C); }
-        .tiktok { background: linear-gradient(45deg, #000000, #25F4EE); }
         .whatsapp { background: #25D366; }
         
-        /* Dashboard - Colorful & Interactive */
-        .dashboard-header { background: linear-gradient(135deg, var(--primary-color), #0a7a62); border-radius: 28px; padding: 30px 35px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .stat-card { background: white; border-radius: 24px; padding: 22px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: all 0.3s; border-left: 5px solid var(--primary-color); }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-        .stat-icon { font-size: 2.2rem; margin-bottom: 12px; }
-        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary-color); line-height: 1; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 30px; margin-bottom: 35px; }
-        .dashboard-card { background: white; border-radius: 28px; padding: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: all 0.2s; }
-        .dashboard-card:hover { box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
-        .chart-container { height: 280px; margin-top: 15px; }
-        .insight-badge { display: inline-block; padding: 6px 14px; border-radius: 40px; font-size: 0.8rem; font-weight: 600; margin: 5px; }
+        /* Dashboard Modern */
+        .dashboard-header { background: linear-gradient(115deg, var(--primary), var(--primary-light)); border-radius: 32px; padding: 28px 35px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 40px; }
+        .stat-card { background: white; border-radius: 28px; padding: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); transition: all 0.3s; border-bottom: 4px solid var(--secondary); }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 20px 35px -12px rgba(0,0,0,0.12); }
+        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary); line-height: 1; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 28px; margin-bottom: 32px; }
+        .dashboard-card { background: white; border-radius: 32px; padding: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); transition: all 0.2s; }
+        .chart-container { height: 260px; margin-top: 18px; }
         .feedback-item { padding: 18px; border-radius: 20px; margin-bottom: 14px; background: #fafcff; border-left: 5px solid; transition: 0.2s; }
-        .feedback-item:hover { transform: translateX(5px); background: #fff; }
-        .service-ranking { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
-        .service-ranking:last-child { border-bottom: none; }
-        .rank-number { font-weight: 800; font-size: 1.2rem; color: var(--secondary-color); }
         
-        @media (max-width: 768px) { .survey-card { padding: 25px; } .dashboard-grid { grid-template-columns: 1fr; } .stats-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 780px) { .survey-card { padding: 28px 24px; } .dashboard-grid { grid-template-columns: 1fr; } .btn-container { flex-direction: column; } .btn { width: 100%; } }
     </style>
 </head>
 <body>
@@ -111,7 +113,7 @@
     <div class="container"><section id="surveySection"></section><section id="dashboardSection"></section></div>
 
     <script>
-        // Initialize localStorage
+        // Init storage
         if (!localStorage.getItem('lunasBusinessData')) {
             localStorage.setItem('lunasBusinessData', JSON.stringify({
                 clients: [], services: [], feedback: [], servicePerceptions: [], employeeShoutouts: [],
@@ -120,197 +122,234 @@
         }
 
         // Navigation
-        document.getElementById('navSurvey').addEventListener('click', () => { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); document.getElementById('navSurvey').classList.add('active'); document.getElementById('surveySection').style.display='block'; document.getElementById('dashboardSection').style.display='none'; loadSurvey(); });
-        document.getElementById('navDashboard').addEventListener('click', () => { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); document.getElementById('navDashboard').classList.add('active'); document.getElementById('surveySection').style.display='none'; document.getElementById('dashboardSection').style.display='block'; handleDashboardAuth(); });
+        document.getElementById('navSurvey').onclick = () => { setActiveNav('survey'); document.getElementById('surveySection').style.display='block'; document.getElementById('dashboardSection').style.display='none'; loadModernSurvey(); };
+        document.getElementById('navDashboard').onclick = () => { setActiveNav('dashboard'); document.getElementById('surveySection').style.display='none'; document.getElementById('dashboardSection').style.display='block'; authDashboard(); };
+        function setActiveNav(section) { document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); if(section==='survey') document.getElementById('navSurvey').classList.add('active'); else document.getElementById('navDashboard').classList.add('active'); }
 
-        const SERVICE_LIST = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"];
+        const SERVICES = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"];
 
-        function loadSurvey() {
-            let servicesHtml = `<div class="services-grid">`;
-            SERVICE_LIST.forEach(svc => {
+        function loadModernSurvey() {
+            let servicesHtml = `<div class="services-grid" id="servicesGrid">`;
+            SERVICES.forEach(svc => {
                 servicesHtml += `
-                    <div class="service-item" data-svc="${svc}">
-                        <div class="service-header"><input type="checkbox" class="service-check" value="${svc}"> <label style="font-weight:600; cursor:pointer;">${svc}</label></div>
-                        <div class="service-stars" style="display:none;">${[1,2,3,4,5].map(s => `<span data-star="${s}" class="star">★</span>`).join('')}</div>
-                        <div class="service-comment-input" style="display:none;"><input type="text" class="svc-comment" placeholder="Your experience with this service..."></div>
+                    <div class="service-card" data-svc="${svc}">
+                        <div style="display: flex; align-items: center;">
+                            <input type="checkbox" class="service-check" value="${svc}" id="chk_${svc.replace(/\s/g,'')}">
+                            <label class="service-name" style="cursor:pointer; flex:1; margin-left:5px;">${svc}</label>
+                        </div>
+                        <div class="service-rating-area">
+                            <div class="star-group" data-service="${svc}">
+                                ${[1,2,3,4,5].map(s => `<span data-star="${s}" class="star">★</span>`).join('')}
+                            </div>
+                            <div class="service-comment-input">
+                                <input type="text" class="svc-comment" placeholder="Share your experience with ${svc}... (e.g., relaxing, precise, amazing)">
+                            </div>
+                        </div>
                     </div>
                 `;
             });
-            servicesHtml += `</div><div class="form-group"><label>If you selected "Other", please specify:</label><input type="text" id="otherServiceName" placeholder="Service name" style="border-radius:40px;"></div>`;
+            servicesHtml += `</div><div class="form-group"><label>If you selected "Other", please specify the service name:</label><input type="text" id="otherServiceSpec" placeholder="e.g., Lash Lift, Hair Treatment" style="border-radius:40px;"></div>`;
 
-            const surveyHtml = `
-                <div class="survey-header"><h1 class="survey-title">Client Satisfaction Survey</h1><p>Thank you for choosing LUNAS. Your feedback helps us improve our services.</p></div>
-                <div class="progress-container"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div>
+            const fullSurvey = `
+                <div class="survey-header"><div class="survey-title">✨ Client Satisfaction Survey ✨</div><p>Thank you for choosing LUNAS. Your detailed feedback helps us grow.</p></div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
                 
                 <!-- Card 1: Client Info -->
                 <div class="survey-card active" id="card1">
-                    <div class="card-header"><h2><i class="fas fa-user"></i> Contact Information</h2><p>We'd love to stay in touch</p></div>
-                    <div class="form-group"><label>Phone Number</label><input type="tel" id="clientPhone" placeholder="Enter your phone number"></div>
-                    <div class="form-group"><label>Date of Visit <span class="required">*</span></label><input type="date" id="visitDate" required></div>
-                    <div class="form-group"><label>Is this your first visit to LUNAS? <span class="required">*</span></label><select id="clientType" required><option value="">Select an option</option><option value="new">Yes, first time</option><option value="returning">No, I've been here before</option></select></div>
-                    <div class="btn-container"><button class="btn btn-secondary" disabled>Previous</button><button class="btn btn-primary" id="next1">Next <i class="fas fa-arrow-right"></i></button></div>
+                    <h2 style="color:var(--primary); margin-bottom:20px;"><i class="fas fa-user-astronaut"></i> About You</h2>
+                    <div class="form-group"><label>📞 Phone Number (optional)</label><input type="tel" id="clientPhone" placeholder="We'll send exclusive offers"></div>
+                    <div class="form-group"><label>📅 Date of Visit <span class="required">*</span></label><input type="date" id="visitDate" required></div>
+                    <div class="form-group"><label>✨ Is this your first visit to LUNAS? <span class="required">*</span></label><select id="clientType" required><option value="">Select an option</option><option value="new">✨ Yes, first time — excited to be here!</option><option value="returning">💎 No, I'm a loyal client</option></select></div>
+                    <div class="btn-container"><button class="btn btn-secondary" disabled>Previous</button><button class="btn btn-primary" id="next1">Next Step →</button></div>
                 </div>
                 
-                <!-- Card 2: Services Received + Per-Service Satisfaction -->
+                <!-- Card 2: Services + Per-Service Rating + Shoutout -->
                 <div class="survey-card" id="card2">
-                    <div class="card-header"><h2><i class="fas fa-spa"></i> Services Received & Your Experience</h2><p>Select each service you received, rate your satisfaction (1-5 stars), and add a comment</p></div>
+                    <h2 style="color:var(--primary);"><i class="fas fa-hand-sparkles"></i> Services Received & Your Experience</h2>
+                    <p style="margin-bottom:20px;">Click on any service card to select it, then rate with stars and add a comment.</p>
                     ${servicesHtml}
-                    <div class="form-group" style="margin-top:20px; background:#fef5e8; padding:20px; border-radius:20px;">
-                        <label><i class="fas fa-star-of-life"></i> Shout-out to an employee who made your experience special</label>
-                        <input type="text" id="employeeShoutout" placeholder="e.g., Sarah - she was amazing with my nails!" style="border-radius:40px;">
-                        <small style="color:var(--text-light);">Recognize any team member who provided exceptional service</small>
+                    <div class="form-group" style="margin-top:30px; background:linear-gradient(115deg,#FFF9EF,#FFF5E6); padding:24px; border-radius:32px;">
+                        <label><i class="fas fa-star-of-life" style="color:var(--secondary);"></i> 🌟 Shout-out to an amazing employee!</label>
+                        <textarea id="employeeShoutout" rows="2" placeholder="e.g., Sarah made my nails absolutely perfect! Her attention to detail was incredible..." style="border-radius:24px; resize:vertical;"></textarea>
+                        <small style="color:var(--gray);">Recognize any team member who made your experience special</small>
                     </div>
-                    <div class="btn-container"><button class="btn btn-secondary" id="prev2"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="next2">Next <i class="fas fa-arrow-right"></i></button></div>
+                    <div class="btn-container"><button class="btn btn-secondary" id="prev2">← Back</button><button class="btn btn-primary" id="next2">Next →</button></div>
                 </div>
                 
-                <!-- Card 3: Service Quality & Staff -->
+                <!-- Card 3: Overall Quality & Staff -->
                 <div class="survey-card" id="card3">
-                    <div class="card-header"><h2><i class="fas fa-star"></i> Service Quality</h2><p>How would you rate the quality of services you received?</p></div>
-                    <div class="form-group"><label>Overall Service Quality <span class="required">*</span></label><div class="rating-container" id="overallRatingGroup">${[5,4,3,2,1].map(v=>`<div class="rating-option" data-val="${v}">${v===5?'⭐️⭐️⭐️⭐️⭐️ Excellent':v===4?'⭐️⭐️⭐️⭐️ Very Good':v===3?'⭐️⭐️⭐️ Good':v===2?'⭐️⭐️ Fair':'⭐️ Poor'}</div>`).join('')}</div><input type="hidden" id="overallRating" required></div>
-                    <div class="form-group"><label>Staff Friendliness & Professionalism</label><select id="staffRating"><option value="">Select rating</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
-                    <div class="form-group"><label>Cleanliness of the Salon/Spa</label><select id="cleanlinessRating"><option value="">Select rating</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
-                    <div class="form-group"><label>Wait Time & Appointment Punctuality</label><select id="waitTimeRating"><option value="">Select rating</option><option value="5">Excellent - No wait</option><option value="4">Very Good - Minimal wait</option><option value="3">Good - Reasonable wait</option><option value="2">Fair - Longer than expected</option><option value="1">Poor - Excessive wait</option></select></div>
-                    <div class="btn-container"><button class="btn btn-secondary" id="prev3"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="next3">Next <i class="fas fa-arrow-right"></i></button></div>
+                    <h2 style="color:var(--primary);"><i class="fas fa-crown"></i> Overall Satisfaction</h2>
+                    <div class="form-group"><label>🌟 Overall Service Quality <span class="required">*</span></label><div class="rating-container" id="overallGroup">${[5,4,3,2,1].map(v=>`<div class="rating-option" data-val="${v}">${v===5?'⭐️⭐️⭐️⭐️⭐️ Excellent':v===4?'⭐️⭐️⭐️⭐️ Very Good':v===3?'⭐️⭐️⭐️ Good':v===2?'⭐️⭐️ Fair':'⭐️ Poor'}</div>`).join('')}</div><input type="hidden" id="overallRating" required></div>
+                    <div class="form-group"><label>👥 Staff Friendliness & Professionalism</label><select id="staffRating"><option value="">Select rating</option><option value="5">Excellent - Warm & expert</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
+                    <div class="form-group"><label>🧼 Cleanliness of the Salon/Spa</label><select id="cleanlinessRating"><option value="">Select rating</option><option value="5">Immaculate & serene</option><option value="4">Very clean</option><option value="3">Acceptable</option><option value="2">Could improve</option><option value="1">Needs attention</option></select></div>
+                    <div class="form-group"><label>⏱️ Wait Time & Punctuality</label><select id="waitTimeRating"><option value="">Select rating</option><option value="5">Seamless - no wait</option><option value="4">Minimal wait</option><option value="3">Reasonable</option><option value="2">Longer than expected</option><option value="1">Excessive delay</option></select></div>
+                    <div class="btn-container"><button class="btn btn-secondary" id="prev3">← Back</button><button class="btn btn-primary" id="next3">Next →</button></div>
                 </div>
                 
                 <!-- Card 4: Feedback -->
                 <div class="survey-card" id="card4">
-                    <div class="card-header"><h2><i class="fas fa-comment-dots"></i> Your Feedback</h2><p>Please share any additional comments, suggestions, or concerns</p></div>
-                    <div class="form-group"><label>Type of Feedback <span class="required">*</span></label><select id="feedbackType" required><option value="">Select feedback type</option><option value="compliment">Compliment</option><option value="suggestion">Suggestion</option><option value="complaint">Complaint</option></select></div>
-                    <div class="form-group"><label>Your Detailed Feedback <span class="required">*</span></label><textarea id="feedbackText" rows="3" required></textarea></div>
-                    <div class="form-group"><label>Would you recommend us to friends or family? <span class="required">*</span></label><select id="recommendation" required><option value="">Select an option</option><option value="yes-definitely">Yes, definitely</option><option value="yes-probably">Yes, probably</option><option value="not-sure">Not sure</option><option value="probably-not">Probably not</option><option value="no">No</option></select></div>
-                    <div class="form-group"><label>How can we improve our services?</label><textarea id="improvementSuggestions" rows="2"></textarea></div>
-                    <div class="btn-container"><button class="btn btn-secondary" id="prev4"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="submitSurveyBtn">Submit Survey <i class="fas fa-paper-plane"></i></button></div>
+                    <h2 style="color:var(--primary);"><i class="fas fa-comment-heart"></i> Your Voice Matters</h2>
+                    <div class="form-group"><label>Feedback Type <span class="required">*</span></label><select id="feedbackType" required><option value="">Select type</option><option value="compliment">💖 Compliment</option><option value="suggestion">💡 Suggestion</option><option value="complaint">⚠️ Concern / Complaint</option></select></div>
+                    <div class="form-group"><label>Your Detailed Feedback <span class="required">*</span></label><textarea id="feedbackText" rows="3" placeholder="Please share your thoughts..."></textarea></div>
+                    <div class="form-group"><label>Would you recommend LUNAS to friends/family? <span class="required">*</span></label><select id="recommendation" required><option value="">Select</option><option value="yes-definitely">Yes, definitely</option><option value="yes-probably">Yes, probably</option><option value="not-sure">Not sure</option><option value="probably-not">Probably not</option><option value="no">No</option></select></div>
+                    <div class="form-group"><label>How can we improve our services? (optional)</label><textarea id="improvementSuggestions" rows="2" placeholder="We're always listening..."></textarea></div>
+                    <div class="btn-container"><button class="btn btn-secondary" id="prev4">← Back</button><button class="btn btn-primary" id="submitFinalBtn">✨ Submit Survey ✨</button></div>
                 </div>
                 
-                <!-- Thank You -->
-                <div class="survey-card thank-you-card" id="thankYouCard"><div class="thank-you-icon"><i class="fas fa-heart" style="font-size:4rem; color:var(--primary-color);"></i></div><h2>Thank You!</h2><p>Your feedback has been successfully submitted. We truly value your input.</p><div class="social-icons"><a href="https://www.instagram.com/lunas_parlour" target="_blank" class="social-icon"><div class="social-circle instagram"><i class="fab fa-instagram"></i></div></a><a href="https://wa.me/233700422752" target="_blank" class="social-icon"><div class="social-circle whatsapp"><i class="fab fa-whatsapp"></i></div></a></div><button class="btn btn-primary" id="newSurveyBtn"><i class="fas fa-redo"></i> Submit Another Feedback</button></div>
+                <div class="survey-card thank-you-card" id="thankYouCard"><i class="fas fa-heart" style="font-size:4rem; color:var(--secondary);"></i><h2 style="margin:20px 0;">Thank You, Beautiful!</h2><p>Your feedback has been recorded. We truly value your input.</p><div style="display:flex; justify-content:center; gap:25px; margin:30px 0;"><div class="social-circle instagram"><i class="fab fa-instagram"></i></div><div class="social-circle whatsapp"><i class="fab fa-whatsapp"></i></div></div><button class="btn btn-primary" id="newSurveyBtn"><i class="fas fa-redo"></i> Submit Another Response</button></div>
             `;
-            document.getElementById('surveySection').innerHTML = surveyHtml;
-            initSurveyEvents();
+            document.getElementById('surveySection').innerHTML = fullSurvey;
+            initModernSurveyEvents();
         }
 
-        function initSurveyEvents() {
+        function initModernSurveyEvents() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('visitDate').value = today; document.getElementById('visitDate').max = today;
-            // Per-service star toggles
-            document.querySelectorAll('.service-check').forEach(cb => {
-                cb.addEventListener('change', function() {
-                    const parent = this.closest('.service-item');
-                    const starsDiv = parent.querySelector('.service-stars');
-                    const commentDiv = parent.querySelector('.service-comment-input');
-                    starsDiv.style.display = this.checked ? 'flex' : 'none';
-                    commentDiv.style.display = this.checked ? 'block' : 'none';
-                    if (!this.checked) { starsDiv.querySelectorAll('.star').forEach(s=>s.classList.remove('active')); if(commentDiv.querySelector('input')) commentDiv.querySelector('input').value = ''; }
+            
+            // Clickable service cards - entire card toggles checkbox
+            document.querySelectorAll('.service-card').forEach(card => {
+                const chk = card.querySelector('.service-check');
+                const clickableArea = card;
+                clickableArea.addEventListener('click', (e) => {
+                    if(e.target.classList.contains('star') || e.target.classList.contains('svc-comment') || e.target.tagName === 'INPUT') return;
+                    chk.checked = !chk.checked;
+                    if(chk.checked) card.classList.add('selected');
+                    else card.classList.remove('selected');
                 });
+                chk.addEventListener('change', (e) => { e.stopPropagation(); if(chk.checked) card.classList.add('selected'); else card.classList.remove('selected'); });
             });
-            document.querySelectorAll('.service-stars').forEach(starDiv => {
-                const stars = starDiv.querySelectorAll('.star');
-                stars.forEach(star => star.addEventListener('click', function() { const val = parseInt(this.dataset.star); stars.forEach((s,i)=>{ if(i<val) s.classList.add('active'); else s.classList.remove('active'); }); }));
+            
+            // Star rating logic
+            document.querySelectorAll('.star-group').forEach(group => {
+                const stars = group.querySelectorAll('.star');
+                stars.forEach(star => star.addEventListener('click', function(e) { e.stopPropagation(); const val = parseInt(this.dataset.star); stars.forEach((s,i)=>{ if(i<val) s.classList.add('active'); else s.classList.remove('active'); }); }));
             });
-            document.querySelectorAll('#overallRatingGroup .rating-option').forEach(opt => { opt.addEventListener('click', function() { document.querySelectorAll('#overallRatingGroup .rating-option').forEach(o=>o.classList.remove('selected')); this.classList.add('selected'); document.getElementById('overallRating').value = this.dataset.val; }); });
+            
+            // Overall rating
+            document.querySelectorAll('#overallGroup .rating-option').forEach(opt => { opt.addEventListener('click', function() { document.querySelectorAll('#overallGroup .rating-option').forEach(o=>o.classList.remove('selected')); this.classList.add('selected'); document.getElementById('overallRating').value = this.dataset.val; }); });
             
             let current = 1;
             const showCard = (n) => { document.querySelectorAll('.survey-card').forEach(c=>c.classList.remove('active')); document.getElementById(`card${n}`).classList.add('active'); document.getElementById('progressFill').style.width = `${((n-1)/4)*100}%`; current=n; };
-            document.getElementById('next1').onclick = () => { if(document.getElementById('clientType').value && document.getElementById('visitDate').value) showCard(2); else alert("Please fill required fields."); };
-            document.getElementById('next2').onclick = () => { if(Array.from(document.querySelectorAll('.service-check')).some(c=>c.checked)) showCard(3); else alert("Please select at least one service."); };
+            document.getElementById('next1').onclick = () => { if(document.getElementById('clientType').value && document.getElementById('visitDate').value) showCard(2); else alert("Please select visit type and date."); };
+            document.getElementById('next2').onclick = () => { if(Array.from(document.querySelectorAll('.service-check')).some(c=>c.checked)) showCard(3); else alert("Please select at least one service you received."); };
             document.getElementById('next3').onclick = () => { if(document.getElementById('overallRating').value) showCard(4); else alert("Please rate overall service quality."); };
             document.getElementById('prev2').onclick = () => showCard(1); document.getElementById('prev3').onclick = () => showCard(2); document.getElementById('prev4').onclick = () => showCard(3);
-            document.getElementById('submitSurveyBtn').onclick = () => { if(document.getElementById('feedbackType').value && document.getElementById('feedbackText').value && document.getElementById('recommendation').value) submitSurvey(); else alert("Please complete feedback section."); };
+            
+            // FIXED SUBMIT BUTTON
+            document.getElementById('submitFinalBtn').onclick = () => {
+                if(!document.getElementById('feedbackType').value || !document.getElementById('feedbackText').value || !document.getElementById('recommendation').value) {
+                    alert("Please complete feedback type, detailed feedback, and recommendation.");
+                    return;
+                }
+                submitSurveyData();
+            };
             document.getElementById('newSurveyBtn').onclick = () => location.reload();
         }
 
-        function submitSurvey() {
-            const selectedServices = [];
-            const servicePerceptions = [];
+        function submitSurveyData() {
+            const selected = [];
+            const perceptions = [];
             document.querySelectorAll('.service-check').forEach(cb => {
                 if(cb.checked) {
                     let svc = cb.value;
-                    const parent = cb.closest('.service-item');
-                    const starCount = parent.querySelectorAll('.star.active').length;
-                    const comment = parent.querySelector('.svc-comment')?.value || '';
-                    selectedServices.push(svc);
-                    servicePerceptions.push({ service: svc, rating: starCount, comment: comment });
+                    const card = cb.closest('.service-card');
+                    const starCount = card.querySelectorAll('.star.active').length;
+                    const comment = card.querySelector('.svc-comment')?.value || '';
+                    selected.push(svc);
+                    perceptions.push({ service: svc, rating: starCount, comment: comment });
                 }
             });
-            const otherVal = document.getElementById('otherServiceName')?.value;
-            if(otherVal && selectedServices.includes('Other')) { const idx = selectedServices.indexOf('Other'); if(idx!==-1) selectedServices[idx]=otherVal; const pIdx = servicePerceptions.findIndex(p=>p.service==='Other'); if(pIdx!==-1) servicePerceptions[pIdx].service=otherVal; }
+            const otherVal = document.getElementById('otherServiceSpec')?.value;
+            if(otherVal && selected.includes('Other')) { const idx = selected.indexOf('Other'); if(idx!==-1) selected[idx] = otherVal; const pIdx = perceptions.findIndex(p=>p.service==='Other'); if(pIdx!==-1) perceptions[pIdx].service = otherVal; }
             
             const shoutout = document.getElementById('employeeShoutout')?.value.trim() || null;
             const clientId = 'LUN' + Date.now().toString().slice(-8);
             const business = JSON.parse(localStorage.getItem('lunasBusinessData'));
+            
             business.clients.push({
                 id: clientId, type: document.getElementById('clientType').value, phone: document.getElementById('clientPhone').value,
-                visitDate: document.getElementById('visitDate').value, services: selectedServices,
+                visitDate: document.getElementById('visitDate').value, services: selected,
                 rating: parseInt(document.getElementById('overallRating').value),
                 staffRating: parseInt(document.getElementById('staffRating').value) || null,
                 cleanlinessRating: parseInt(document.getElementById('cleanlinessRating').value) || null,
                 waitTimeRating: parseInt(document.getElementById('waitTimeRating').value) || null,
                 employeeShoutout: shoutout, submissionDate: new Date().toISOString()
             });
+            
             if(document.getElementById('clientType').value === 'new') business.newClientsCount++; else business.returningClientsCount++;
-            selectedServices.forEach(svc => { const ex = business.services.find(s=>s.name===svc); if(ex) ex.count++; else business.services.push({ name: svc, count: 1 }); });
-            servicePerceptions.forEach(sp => business.servicePerceptions.push({ clientId, service: sp.service, rating: sp.rating, comment: sp.comment }));
+            
+            selected.forEach(svc => { const ex = business.services.find(s=>s.name===svc); if(ex) ex.count++; else business.services.push({ name: svc, count:1 }); });
+            perceptions.forEach(p => business.servicePerceptions.push({ clientId, service: p.service, rating: p.rating, comment: p.comment }));
             if(shoutout) business.employeeShoutouts.push({ clientId, employee: shoutout, date: new Date().toISOString() });
-            business.feedback.push({ id: clientId, type: document.getElementById('feedbackType').value, text: document.getElementById('feedbackText').value, recommendation: document.getElementById('recommendation').value, improvements: document.getElementById('improvementSuggestions').value, date: new Date().toISOString() });
+            business.feedback.push({
+                id: clientId, type: document.getElementById('feedbackType').value, text: document.getElementById('feedbackText').value,
+                recommendation: document.getElementById('recommendation').value, improvements: document.getElementById('improvementSuggestions').value, date: new Date().toISOString()
+            });
+            
             localStorage.setItem('lunasBusinessData', JSON.stringify(business));
-            document.getElementById('thankYouCard').classList.add('active'); document.getElementById('card4').classList.remove('active'); document.getElementById('progressFill').style.width = '100%';
-            setTimeout(() => alert("Thank you for your feedback!"), 300);
+            document.getElementById('thankYouCard').classList.add('active');
+            document.getElementById('card4').classList.remove('active');
+            document.getElementById('progressFill').style.width = '100%';
+            alert("✅ Thank you! Your feedback has been submitted successfully.");
         }
 
-        // DASHBOARD AUTH & COLORFUL RENDER
-        function handleDashboardAuth() { if(localStorage.getItem('lunasLoggedIn')==='true') renderColorfulDashboard(); else showLogin(); }
-        function showLogin() {
-            document.getElementById('dashboardSection').innerHTML = `<div style="display:flex; justify-content:center; align-items:center; min-height:60vh;"><div class="dashboard-card" style="max-width:450px; text-align:center;"><i class="fas fa-chart-line" style="font-size:3rem; color:var(--primary-color);"></i><h2>Analytics Dashboard Login</h2><div class="form-group"><input type="text" id="loginUser" placeholder="Username" style="border-radius:40px;"></div><div class="form-group"><input type="password" id="loginPass" placeholder="Password" style="border-radius:40px;"></div><button class="btn btn-primary" id="doLogin">Login</button><p id="loginErr" style="color:red; margin-top:15px; display:none;">Username: admin | Password: lunas2025</p></div></div>`;
-            document.getElementById('doLogin').onclick = () => { const u=document.getElementById('loginUser').value, p=document.getElementById('loginPass').value; if(u==='admin' && p==='lunas2025'){ localStorage.setItem('lunasLoggedIn','true'); renderColorfulDashboard(); } else document.getElementById('loginErr').style.display='block'; };
+        // DASHBOARD AUTH
+        function authDashboard() {
+            if(localStorage.getItem('lunasLoggedIn') === 'true') renderModernDashboard();
+            else showLoginScreen();
         }
-        function renderColorfulDashboard() {
+        function showLoginScreen() {
+            document.getElementById('dashboardSection').innerHTML = `
+                <div style="display:flex; justify-content:center; align-items:center; min-height:70vh;"><div class="dashboard-card" style="max-width:460px; text-align:center;"><i class="fas fa-chart-line" style="font-size:3rem; color:var(--primary);"></i><h2>Admin Access</h2><p style="margin-bottom:20px;">Enter credentials to view analytics</p><div class="form-group"><input type="text" id="admUser" placeholder="Username" style="border-radius:40px;"></div><div class="form-group"><input type="password" id="admPass" placeholder="Password" style="border-radius:40px;"></div><button class="btn btn-primary" id="loginAdminBtn">Unlock Dashboard</button><p id="loginErrorMsg" style="color:red; margin-top:15px; display:none;">🔐 Username: <strong>admin</strong> | Password: <strong>lunas2025</strong></p></div></div>
+            `;
+            document.getElementById('loginAdminBtn').onclick = () => {
+                const u = document.getElementById('admUser').value, p = document.getElementById('admPass').value;
+                if(u === 'admin' && p === 'lunas2025') { localStorage.setItem('lunasLoggedIn','true'); renderModernDashboard(); }
+                else document.getElementById('loginErrorMsg').style.display = 'block';
+            };
+        }
+        
+        function renderModernDashboard() {
             const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
             const totalClients = data.clients.length;
             const avgRating = totalClients ? (data.clients.reduce((a,b)=>a+(b.rating||0),0)/totalClients).toFixed(1) : '0.0';
             const totalServicesRec = data.clients.reduce((a,c)=>a+(c.services?.length||0),0);
-            const positiveFeedback = data.feedback.filter(f=>f.type==='compliment').length;
-            const npsScore = data.feedback.filter(f=>f.recommendation==='yes-definitely').length;
+            const compliments = data.feedback.filter(f=>f.type==='compliment').length;
             
-            // Service quality ranking
             const svcQuality = new Map();
             data.servicePerceptions?.forEach(p => { if(!svcQuality.has(p.service)) svcQuality.set(p.service, []); svcQuality.get(p.service).push(p.rating); });
-            const svcRanking = Array.from(svcQuality.entries()).map(([name,ratings]) => ({ name, avg: ratings.reduce((a,b)=>a+b,0)/ratings.length, count: ratings.length })).sort((a,b)=>b.avg-a.avg).slice(0,5);
+            const svcRanking = Array.from(svcQuality.entries()).map(([n,r]) => ({ name: n, avg: r.reduce((a,b)=>a+b,0)/r.length })).sort((a,b)=>b.avg-a.avg).slice(0,6);
             
-            const recentFeedback = data.feedback.slice(-4).reverse();
+            const recentFeedback = data.feedback.slice(-5).reverse();
             const shoutouts = data.employeeShoutouts?.slice(-5).reverse() || [];
             
             const dashboardHtml = `
-                <div class="dashboard-header"><div><h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1><p>Client Feedback Analysis & Service Insights</p></div><button id="logoutDash" class="btn" style="background:rgba(255,255,255,0.2);"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
-                <div class="stats-grid"><div class="stat-card"><div class="stat-icon"><i class="fas fa-users" style="color:var(--primary-color);"></i></div><div class="stat-number">${totalClients}</div><p>Total Clients Surveyed</p><small>${data.newClientsCount} new | ${data.returningClientsCount} returning</small></div><div class="stat-card"><div class="stat-icon"><i class="fas fa-star" style="color:var(--secondary-color);"></i></div><div class="stat-number">${avgRating}</div><p>Average Rating</p><small>out of 5</small></div><div class="stat-card"><div class="stat-icon"><i class="fas fa-spa" style="color:var(--teal);"></i></div><div class="stat-number">${totalServicesRec}</div><p>Services Received</p></div><div class="stat-card"><div class="stat-icon"><i class="fas fa-heart" style="color:var(--coral);"></i></div><div class="stat-number">${positiveFeedback}</div><p>Compliments Received</p></div></div>
-                <div class="dashboard-grid"><div class="dashboard-card"><h2><i class="fas fa-chart-pie"></i> Client Demographics</h2><div class="chart-container"><canvas id="clientTypeChart"></canvas></div></div><div class="dashboard-card"><h2><i class="fas fa-trophy"></i> Top Rated Services</h2><div class="chart-container"><canvas id="serviceRankingChart"></canvas></div></div></div>
-                <div class="dashboard-grid"><div class="dashboard-card"><h2><i class="fas fa-chart-bar"></i> Most Popular Services</h2><div class="service-list" style="max-height:280px; overflow-y:auto;">${data.services.sort((a,b)=>b.count-a.count).slice(0,8).map(s=>`<div class="service-ranking"><span><span class="rank-number">📌</span> ${s.name}</span><span style="background:var(--primary-color); color:white; padding:4px 14px; border-radius:40px;">${s.count} times</span></div>`).join('') || '<p>No data yet</p>'}</div></div>
-                <div class="dashboard-card"><h2><i class="fas fa-medal"></i> Employee Shoutouts</h2><div style="max-height:280px; overflow-y:auto;">${shoutouts.map(s=>`<div style="padding:12px; background:#fef5e8; border-radius:16px; margin-bottom:10px;"><i class="fas fa-user-check" style="color:var(--secondary-color);"></i> "${s.employee}"<br><small>${new Date(s.date).toLocaleDateString()}</small></div>`).join('') || '<p>No shoutouts yet. Be the first!</p>'}</div></div></div>
-                <div class="dashboard-card"><h2><i class="fas fa-star-half-alt"></i> Service Quality Breakdown (Per-Service Rating)</h2><div class="chart-container"><canvas id="serviceQualityChart"></canvas></div></div>
-                <div class="dashboard-card"><h2><i class="fas fa-comment-dots"></i> Recent Client Feedback</h2>${recentFeedback.map(fb=>`<div class="feedback-item" style="border-left-color:${fb.type==='compliment'?'var(--success-color)':fb.type==='suggestion'?'var(--warning-color)':'var(--danger-color)'}"><strong>${fb.type.toUpperCase()}</strong> — ${fb.text.substring(0,120)}<div style="font-size:12px; margin-top:8px; color:var(--text-light);">Recommendation: ${fb.recommendation}</div></div>`).join('') || '<p>No feedback yet</p>'}</div>
-                <div class="dashboard-card"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button id="exportData" class="btn btn-primary"><i class="fas fa-download"></i> Export All Data</button><button id="deleteAllData" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Delete All Responses</button><button id="refreshDash" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
+                <div class="dashboard-header"><div><h1><i class="fas fa-chart-pie"></i> LUNAS Analytics Studio</h1><p>Decision-making insights from client feedback</p></div><button id="logoutDashBtn" class="btn" style="background:rgba(255,255,255,0.2);"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
+                <div class="stats-grid"><div class="stat-card"><div class="stat-number">${totalClients}</div><p>Total Surveys</p><small>${data.newClientsCount} new · ${data.returningClientsCount} returning</small></div><div class="stat-card"><div class="stat-number">${avgRating}</div><p>⭐ Avg Overall Rating</p><small>/5 stars</small></div><div class="stat-card"><div class="stat-number">${totalServicesRec}</div><p>Services Received</p></div><div class="stat-card"><div class="stat-number">${compliments}</div><p>💖 Compliments</p></div></div>
+                <div class="dashboard-grid"><div class="dashboard-card"><h2><i class="fas fa-chart-simple"></i> Service Satisfaction Radar</h2><div class="chart-container"><canvas id="radarChart"></canvas></div></div><div class="dashboard-card"><h2><i class="fas fa-medal"></i> Employee Shoutouts</h2><div style="max-height:260px; overflow-y:auto;">${shoutouts.map(s=>`<div style="background:#FEF5E8; border-radius:20px; padding:14px; margin-bottom:12px;"><i class="fas fa-user-check" style="color:var(--secondary);"></i> <strong>“${s.employee}”</strong><br><small>${new Date(s.date).toLocaleDateString()}</small></div>`).join('') || '<p>No shoutouts yet — be the first to appreciate!</p>'}</div></div></div>
+                <div class="dashboard-card"><h2><i class="fas fa-chart-line"></i> Top Rated Services (Avg Score)</h2><div class="chart-container"><canvas id="topServicesChart"></canvas></div></div>
+                <div class="dashboard-card"><h2><i class="fas fa-comment-dots"></i> Recent Client Feedback</h2>${recentFeedback.map(fb=>`<div class="feedback-item" style="border-left-color:${fb.type==='compliment'?'var(--success)':fb.type==='suggestion'?'var(--warning)':'var(--danger)'}"><strong>${fb.type.toUpperCase()}</strong> — ${fb.text.substring(0,130)}<div style="font-size:12px; margin-top:8px;">👍 Recommendation: ${fb.recommendation}</div></div>`).join('') || '<p>No feedback yet</p>'}</div>
+                <div class="dashboard-card"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button id="exportAllBtn" class="btn btn-primary"><i class="fas fa-download"></i> Export CSV</button><button id="deleteAllResponsesBtn" class="btn btn-danger"><i class="fas fa-trash"></i> Delete All Data</button><button id="refreshDashboardBtn" class="btn btn-secondary"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
             `;
             document.getElementById('dashboardSection').innerHTML = dashboardHtml;
-            document.getElementById('logoutDash').onclick = () => { localStorage.removeItem('lunasLoggedIn'); handleDashboardAuth(); };
-            document.getElementById('exportData').onclick = () => exportToCSV(data);
-            document.getElementById('deleteAllData').onclick = () => { if(confirm("⚠️ WARNING: This will DELETE ALL client responses! Cannot be undone.")) { localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], servicePerceptions:[], employeeShoutouts:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() })); renderColorfulDashboard(); } };
-            document.getElementById('refreshDash').onclick = () => renderColorfulDashboard();
+            document.getElementById('logoutDashBtn').onclick = () => { localStorage.removeItem('lunasLoggedIn'); authDashboard(); };
+            document.getElementById('exportAllBtn').onclick = () => exportDataCSV(data);
+            document.getElementById('deleteAllResponsesBtn').onclick = () => { if(confirm("⚠️ PERMANENTLY DELETE all client responses?")) { localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], servicePerceptions:[], employeeShoutouts:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() })); renderModernDashboard(); } };
+            document.getElementById('refreshDashboardBtn').onclick = () => renderModernDashboard();
             
-            // Charts
-            const newCount = data.clients.filter(c=>c.type==='new').length;
-            const returningCount = data.clients.filter(c=>c.type==='returning').length;
-            new Chart(document.getElementById('clientTypeChart'), { type: 'doughnut', data: { labels: ['New Clients', 'Returning Clients'], datasets: [{ data: [newCount, returningCount], backgroundColor: ['#006850', '#FBB040'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: true } });
+            // Render charts
+            const radarLabels = svcRanking.map(s=>s.name);
+            const radarData = svcRanking.map(s=>s.avg);
+            new Chart(document.getElementById('radarChart'), { type: 'radar', data: { labels: radarLabels, datasets: [{ label: 'Satisfaction (1-5)', data: radarData, backgroundColor: 'rgba(0,104,80,0.2)', borderColor: '#006850', pointBackgroundColor: '#FBB040', borderWidth: 2 }] }, options: { scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 } } }, responsive: true } });
             
             const topServices = data.services.sort((a,b)=>b.count-a.count).slice(0,6);
-            new Chart(document.getElementById('serviceRankingChart'), { type: 'bar', data: { labels: topServices.map(s=>s.name), datasets: [{ label: 'Times Received', data: topServices.map(s=>s.count), backgroundColor: '#1abc9c', borderRadius: 10 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
-            
-            const svcNames = svcRanking.map(s=>s.name);
-            const svcAvgs = svcRanking.map(s=>s.avg);
-            new Chart(document.getElementById('serviceQualityChart'), { type: 'radar', data: { labels: svcNames, datasets: [{ label: 'Avg Satisfaction (1-5)', data: svcAvgs, backgroundColor: 'rgba(0,104,80,0.2)', borderColor: '#006850', pointBackgroundColor: '#FBB040', pointBorderColor: '#fff', borderWidth: 2 }] }, options: { responsive: true, scales: { r: { min: 0, max: 5, ticks: { stepSize: 1 } } } } });
+            new Chart(document.getElementById('topServicesChart'), { type: 'bar', data: { labels: topServices.map(s=>s.name), datasets: [{ label: 'Times Received', data: topServices.map(s=>s.count), backgroundColor: '#1abc9c', borderRadius: 12 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
         }
-        function exportToCSV(data) { let csv="Client ID,Type,Overall Rating,Employee Shoutout,Services\n"; data.clients.forEach(c=>{ csv+=`${c.id},${c.type},${c.rating},"${c.employeeShoutout||''}","${c.services.join('; ')}"\n`; }); const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='lunas_survey_data.csv'; a.click(); alert('✅ Data exported!'); }
         
-        loadSurvey();
+        function exportDataCSV(data) { let csv = "ClientID,Type,Rating,Shoutout,Services\n"; data.clients.forEach(c=>{ csv += `${c.id},${c.type},${c.rating},"${c.employeeShoutout || ''}","${c.services.join('; ')}"\n`; }); const blob = new Blob([csv],{type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_feedback_data.csv'; a.click(); alert('✅ Data exported!'); }
+        
+        // Load survey initially
+        loadModernSurvey();
     </script>
 </body>
 </html>
