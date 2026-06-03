@@ -316,12 +316,10 @@
             
             // EXACT SUBMIT LOGIC FROM YOUR ORIGINAL WORKING CODE
             document.getElementById('submitSurveyBtn').addEventListener('click', function() {
-                const form = document.getElementById('feedbackForm');
-                if (form.checkValidity()) {
+                if (document.getElementById('feedbackForm').checkValidity()) {
                     submitSurveyData();
                 } else {
-                    const firstInvalid = form.querySelector(':invalid');
-                    if (firstInvalid) firstInvalid.reportValidity();
+                    document.getElementById('feedbackForm').reportValidity();
                 }
             });
             
@@ -369,7 +367,9 @@
             if (surveyData.clientInfo.clientType === 'new') businessData.newClientsCount++; else businessData.returningClientsCount++;
             
             surveyData.services.forEach(svc => { const ex = businessData.services.find(s => s.name === svc); if(ex) ex.count++; else businessData.services.push({ name: svc, count: 1 }); });
+            if (!businessData.servicePerceptions) businessData.servicePerceptions = [];
             surveyData.servicePerceptions.forEach(sp => businessData.servicePerceptions.push({ clientId, service: sp.service, rating: sp.rating, comment: sp.comment }));
+            if (!businessData.employeeShoutouts) businessData.employeeShoutouts = [];
             if (surveyData.employeeShoutout) businessData.employeeShoutouts.push({ clientId, employee: surveyData.employeeShoutout, date: new Date().toISOString() });
             businessData.feedback.push({ id: clientId, type: surveyData.feedback.type, text: surveyData.feedback.text, recommendation: surveyData.feedback.recommendation, improvements: surveyData.feedback.improvements, employeeShoutout: surveyData.employeeShoutout, date: new Date().toISOString() });
             
