@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LUNAS Beauty Salon - Client Survey & Analytics System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LUNAS Beauty Salon - Client Satisfaction Survey</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -53,6 +53,7 @@
         
         .card-header { margin-bottom: 30px; border-left: 4px solid var(--secondary-color); padding-left: 20px; }
         .card-header h2 { font-size: 1.8rem; color: var(--primary-color); margin-bottom: 8px; }
+        .card-header p { color: var(--text-light); }
         
         .form-group { margin-bottom: 25px; }
         label { display: block; font-weight: 600; margin-bottom: 10px; color: var(--dark-color); }
@@ -61,7 +62,6 @@
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 4px rgba(0,104,80,0.1); }
         textarea { min-height: 100px; resize: vertical; }
         
-        /* Per-Service Rating Cards */
         .services-enhanced { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
         .service-card-enh { background: #fafcff; border-radius: 20px; border: 2px solid var(--border-color); transition: all 0.25s ease; overflow: hidden; cursor: pointer; }
         .service-card-enh:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
@@ -105,8 +105,6 @@
         /* Dashboard Styles */
         .dashboard-header { background: linear-gradient(135deg, var(--primary-color), #00875a); border-radius: 28px; padding: 28px 35px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
         .logout-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 12px 25px; border-radius: 40px; font-weight: 600; cursor: pointer; color: white; }
-        .logout-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
-        
         .login-container { display: flex; justify-content: center; align-items: center; min-height: 60vh; }
         .login-card { background: white; border-radius: 32px; padding: 50px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); width: 100%; max-width: 450px; text-align: center; }
         .login-error { color: var(--danger-color); margin-top: 15px; display: none; }
@@ -122,18 +120,19 @@
         
         .dashboard-card { background: white; border-radius: 28px; padding: 28px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
         .chart-container { height: 280px; margin-top: 15px; }
-        .service-item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eef2f8; }
-        .service-count { background: rgba(0,104,80,0.1); color: var(--primary-color); padding: 5px 14px; border-radius: 30px; font-weight: 600; }
         .feedback-item { padding: 18px; border-radius: 20px; margin-bottom: 14px; background: #fafcff; border-left: 5px solid var(--primary-color); }
-        .per-service-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eef2f8; }
         
         @media (max-width: 768px) { .container { padding: 15px; } .survey-card { padding: 28px 24px; } .services-enhanced { grid-template-columns: 1fr; } .btn-container { flex-direction: column; } .btn { width: 100%; } }
         
         .toast-success { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 16px 28px; border-radius: 50px; display: flex; align-items: center; gap: 12px; font-weight: 600; z-index: 1000; transform: translateX(400px); transition: 0.3s; cursor: pointer; }
         .toast-success.show { transform: translateX(0); }
+        
+        .sync-status { position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.7); color: white; padding: 5px 12px; border-radius: 15px; font-size: 10px; z-index: 1000; font-family: monospace; }
     </style>
 </head>
 <body>
+    <div class="sync-status" id="syncStatus">🔄 Loading survey...</div>
+    
     <div class="main-header">
         <div class="header-content">
             <div><div class="logo">LUNAS</div><div class="tagline">Beauty Salon & Spa</div></div>
@@ -149,11 +148,11 @@
         <section id="dashboardSection"></section>
     </div>
 
-    <div id="toastMsg" class="toast-success"><i class="fas fa-check-circle"></i><span>Thank you! Your feedback has been recorded.</span><i class="fas fa-times-circle" style="margin-left: 12px;"></i></div>
+    <div id="toastMsg" class="toast-success"><i class="fas fa-check-circle"></i><span>Thank you!</span><i class="fas fa-times-circle" style="margin-left: 12px;"></i></div>
 
     <script>
         // ============================================
-        // SUPABASE CONFIGURATION - YOUR CREDENTIALS
+        // SUPABASE CONFIGURATION
         // ============================================
         const SUPABASE_URL = "https://jxbyfvghztsnvcixnzlr.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YnlmdmdoenRzbnZjaXhuemxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTg3NzUsImV4cCI6MjA5NjIzNDc3NX0.2zweytKYGXnvnnXa2W1t48Rb4f08N8qSIrZuw0ZFEAo";
@@ -162,43 +161,45 @@
         let dbConnected = false;
         
         async function initSupabase() {
+            const statusEl = document.getElementById('syncStatus');
             try {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 // Test connection
                 const { error } = await supabase.from('clients').select('id').limit(1);
-                if (error) {
-                    console.warn("Supabase not ready:", error.message);
+                if (error && error.message.includes('relation')) {
+                    statusEl.innerHTML = '⚠️ Run SQL in Supabase first';
                     dbConnected = false;
                 } else {
-                    console.log("✅ Supabase connected!");
+                    statusEl.innerHTML = '✅ Cloud ready';
                     dbConnected = true;
                 }
             } catch (err) {
-                console.error("Supabase init error:", err);
+                statusEl.innerHTML = '⚠️ Check connection';
                 dbConnected = false;
             }
         }
         
         async function saveToSupabase(surveyData, clientId) {
             if (!dbConnected) {
-                console.log("Supabase not connected, skipping cloud save");
+                console.log("Supabase not connected, saving to local only");
                 return false;
             }
             try {
                 // Insert client
-                await supabase.from('clients').insert([{
+                const { error: clientErr } = await supabase.from('clients').insert([{
                     id: clientId,
                     client_type: surveyData.clientInfo.clientType,
-                    phone: surveyData.clientInfo.phone,
+                    phone: surveyData.clientInfo.phone || null,
                     visit_date: surveyData.clientInfo.visitDate,
                     services: JSON.stringify(surveyData.services),
                     rating: parseInt(surveyData.ratings.overall),
                     staff_rating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
                     cleanliness_rating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
                     wait_time_rating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
-                    employee_shoutout: surveyData.employeeShoutout,
+                    employee_shoutout: surveyData.employeeShoutout || null,
                     submission_date: new Date().toISOString()
                 }]);
+                if (clientErr) console.error("Client insert error:", clientErr);
                 
                 // Insert feedback
                 await supabase.from('feedback').insert([{
@@ -207,8 +208,8 @@
                     type: surveyData.feedback.type,
                     text: surveyData.feedback.text,
                     recommendation: surveyData.feedback.recommendation,
-                    improvements: surveyData.feedback.improvements,
-                    employee_shoutout: surveyData.employeeShoutout,
+                    improvements: surveyData.feedback.improvements || null,
+                    employee_shoutout: surveyData.employeeShoutout || null,
                     date: new Date().toISOString()
                 }]);
                 
@@ -218,7 +219,7 @@
                         client_id: clientId,
                         service: sp.service,
                         rating: sp.rating,
-                        comment: sp.comment
+                        comment: sp.comment || null
                     }]);
                 }
                 
@@ -254,9 +255,9 @@
             toast.querySelector('span').textContent = msg || '✨ Thank you for your feedback! ✨';
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 4000);
-            toast.onclick = (e) => { if(e.target.classList.contains('fa-times-circle')) toast.classList.remove('show'); };
         }
         
+        // Initialize localStorage for dashboard (not for survey loading)
         if (!localStorage.getItem('lunasBusinessData')) {
             localStorage.setItem('lunasBusinessData', JSON.stringify({
                 clients: [], services: [], feedback: [], servicePerceptions: [], employeeShoutouts: [],
@@ -264,6 +265,7 @@
             }));
         }
         
+        // Navigation
         document.getElementById('navSurvey').onclick = () => switchSection('survey');
         document.getElementById('navDashboard').onclick = () => switchSection('dashboard');
         
@@ -285,6 +287,7 @@
         const SERVICES = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"];
         
         function loadSurveyTool() {
+            // Build the services HTML - ALWAYS generate this regardless of localStorage
             let servicesHtml = `<div class="services-enhanced">`;
             SERVICES.forEach(svc => {
                 servicesHtml += `
@@ -399,8 +402,11 @@
                 opt.addEventListener('click', function() { document.getElementById('overallRating').value = this.dataset.value; document.querySelectorAll('#ratingContainer .rating-option').forEach(o => o.classList.remove('selected')); this.classList.add('selected'); });
             });
             
-            let current = 1;
-            const showCard = (n) => { document.querySelectorAll('.survey-card').forEach(c => c.classList.remove('active')); document.getElementById(`card${n}`).classList.add('active'); document.getElementById('progressFill').style.width = `${((n-1)/4)*100}%`; };
+            const showCard = (n) => {
+                document.querySelectorAll('.survey-card').forEach(c => c.classList.remove('active'));
+                document.getElementById(`card${n}`).classList.add('active');
+                document.getElementById('progressFill').style.width = `${((n-1)/4)*100}%`;
+            };
             
             document.getElementById('next1').onclick = () => { if(document.getElementById('clientInfoForm').checkValidity()) showCard(2); else document.getElementById('clientInfoForm').reportValidity(); };
             document.getElementById('next2').onclick = () => { if(document.querySelectorAll('.service-check:checked').length > 0) showCard(3); else alert('Please select at least one service.'); };
@@ -409,7 +415,6 @@
             document.getElementById('prev3').onclick = () => showCard(2);
             document.getElementById('prev4').onclick = () => showCard(3);
             
-            // WORKING SUBMIT - EXACTLY AS YOUR ORIGINAL CODE
             document.getElementById('submitSurveyBtn').addEventListener('click', function() {
                 if (document.getElementById('feedbackForm').checkValidity()) {
                     submitSurveyData();
@@ -449,12 +454,10 @@
             
             const clientId = 'LUN' + Date.now().toString().slice(-8);
             
-            // ============================================
-            // SAVE TO SUPABASE (CLOUD) - ADDED LINE
-            // ============================================
-            await saveToSupabase(surveyData, clientId);
+            // Save to Supabase (cloud)
+            const cloudSaved = await saveToSupabase(surveyData, clientId);
             
-            // Continue with existing localStorage save
+            // Also save to localStorage for backup and dashboard
             const businessData = JSON.parse(localStorage.getItem('lunasBusinessData'));
             
             businessData.clients.push({
@@ -478,7 +481,12 @@
             document.getElementById('thankYouCard').classList.add('active');
             document.getElementById('card4').classList.remove('active');
             document.getElementById('progressFill').style.width = '100%';
-            showToast('✨ Thank you! Your feedback with service ratings has been recorded! ✨');
+            
+            if (cloudSaved) {
+                showToast('✨ Thank you! Your feedback has been saved to the cloud! ✨');
+            } else {
+                showToast('✨ Thank you! Your feedback has been saved locally. ✨');
+            }
         }
         
         // DASHBOARD
@@ -493,38 +501,21 @@
             const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
             const avgRating = data.clients.length ? (data.clients.reduce((a,b)=>a+(b.rating||0),0)/data.clients.length).toFixed(1) : '0.0';
             
-            const perServiceMap = new Map();
-            (data.servicePerceptions || []).forEach(p => { if(!perServiceMap.has(p.service)) perServiceMap.set(p.service, []); perServiceMap.get(p.service).push(p.rating); });
-            let perServiceHtml = '';
-            for(let [svc, ratings] of perServiceMap.entries()) {
-                const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(1) : 'N/A';
-                perServiceHtml += `<div class="per-service-row"><span><strong>${svc}</strong></span><span style="color:var(--secondary-color);">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))}</span><span>${avg}/5 (${ratings.length})</span></div>`;
-            }
-            
-            const shoutoutsHtml = (data.employeeShoutouts || []).slice(-5).reverse().map(s => `<div style="background:#fef5e8; border-radius:16px; padding:14px; margin-bottom:10px;"><i class="fas fa-user-check" style="color:var(--secondary-color);"></i> "${s.employee}"<br><small>${new Date(s.date).toLocaleDateString()}</small></div>`).join('') || '<p>No shoutouts yet</p>';
-            
             document.getElementById('dashboardSection').innerHTML = `
                 <div class="dashboard-header"><div><h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1><p>Client Feedback Analysis & Service Insights</p></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
-                <div class="stats-grid"><div class="stat-card"><div class="stat-number">${data.clients.length}</div><div class="stat-label">Total Clients</div><small>${data.newClientsCount} new · ${data.returningClientsCount} returning</small></div><div class="stat-card"><div class="stat-number">${avgRating}</div><div class="stat-label">⭐ Average Rating</div></div><div class="stat-card"><div class="stat-number">${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</div><div class="stat-label">Services Used</div></div><div class="stat-card"><div class="stat-number">${data.feedback.length}</div><div class="stat-label">Feedbacks</div></div></div>
-                <div class="dashboard-grid"><div class="dashboard-card"><h2><i class="fas fa-chart-pie"></i> Client Demographics</h2><div class="chart-container"><canvas id="clientChart"></canvas></div></div><div class="dashboard-card"><h2><i class="fas fa-chart-bar"></i> Most Popular Services</h2><div class="chart-container"><canvas id="serviceChart"></canvas></div></div></div>
-                <div class="dashboard-card"><h2><i class="fas fa-star-half-alt"></i> Per-Service Satisfaction Ratings</h2>${perServiceHtml || '<p>No per-service ratings yet</p>'}</div>
-                <div class="dashboard-grid"><div class="dashboard-card"><h2><i class="fas fa-medal"></i> Employee Shoutouts</h2>${shoutoutsHtml}</div><div class="dashboard-card"><h2><i class="fas fa-comment-dots"></i> Recent Feedback</h2>${data.feedback.slice(-5).reverse().map(fb => `<div class="feedback-item" style="border-left-color:${fb.type==='compliment'?'#2ecc71':fb.type==='suggestion'?'#f39c12':'#e74c3c'}"><strong>${fb.type.toUpperCase()}</strong><br>${fb.text.substring(0,100)}${fb.text.length>100?'...':''}<br><small>👍 ${fb.recommendation?.replace('-',' ')}</small></div>`).join('') || '<p>No feedback yet</p>'}</div></div>
-                <div class="dashboard-card"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-download"></i> Export CSV</button><button class="btn btn-danger" id="deleteAllBtn"><i class="fas fa-trash-alt"></i> Delete All</button><button class="btn btn-secondary" id="refreshDashBtn"><i class="fas fa-sync-alt"></i> Refresh</button></div></div>
-                <div style="text-align:center; padding:20px; color:var(--text-light);"><p>LUNAS Analytics | Updated: ${new Date().toLocaleString()}</p></div>
+                <div class="stats-grid">
+                    <div class="stat-card"><div class="stat-number">${data.clients.length}</div><div class="stat-label">Total Clients</div><small>${data.newClientsCount} new · ${data.returningClientsCount} returning</small></div>
+                    <div class="stat-card"><div class="stat-number">${avgRating}</div><div class="stat-label">⭐ Average Rating</div></div>
+                    <div class="stat-card"><div class="stat-number">${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</div><div class="stat-label">Services Used</div></div>
+                    <div class="stat-card"><div class="stat-number">${data.feedback.length}</div><div class="stat-label">Feedbacks</div></div>
+                </div>
+                <div class="dashboard-card"><h2>Recent Feedback</h2>${data.feedback.slice(-5).reverse().map(fb => `<div class="feedback-item" style="border-left-color:${fb.type==='compliment'?'#2ecc71':fb.type==='suggestion'?'#f39c12':'#e74c3c'}"><strong>${fb.type.toUpperCase()}</strong><br>${fb.text.substring(0,100)}${fb.text.length>100?'...':''}<br><small>👍 ${fb.recommendation?.replace('-',' ')}</small></div>`).join('') || '<p>No feedback yet</p>'}</div>
+                <div class="dashboard-card"><button class="btn btn-primary" id="exportBtn">Export CSV</button><button class="btn btn-danger" id="deleteBtn" style="margin-left:15px;">Delete All</button></div>
             `;
             
             document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('lunasLoggedIn'); loadDashboard(); };
-            document.getElementById('exportCsvBtn').onclick = () => { let csv = "Client,Rating,Shoutout\n"; data.clients.forEach(c => csv += `${c.id},${c.rating},"${c.employeeShoutout || ''}"\n`); const blob = new Blob([csv], {type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_data.csv'; a.click(); alert('✅ CSV exported!'); };
-            document.getElementById('deleteAllBtn').onclick = () => { if(confirm('⚠️ Delete ALL data? Cannot be undone.')) { localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], servicePerceptions:[], employeeShoutouts:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() })); showDashboard(); alert('✅ All data deleted.'); } };
-            document.getElementById('refreshDashBtn').onclick = () => showDashboard();
-            
-            setTimeout(() => {
-                const newC = data.clients.filter(c=>c.type==='new').length;
-                const retC = data.clients.filter(c=>c.type==='returning').length;
-                new Chart(document.getElementById('clientChart'), { type: 'doughnut', data: { labels: ['New Clients', 'Returning'], datasets: [{ data: [newC, retC], backgroundColor: ['#006850', '#FBB040'] }] }, options: { responsive: true } });
-                const topSvcs = data.services.sort((a,b)=>b.count-a.count).slice(0,6);
-                if(topSvcs.length) new Chart(document.getElementById('serviceChart'), { type: 'bar', data: { labels: topSvcs.map(s=>s.name), datasets: [{ label: 'Times Received', data: topSvcs.map(s=>s.count), backgroundColor: '#006850', borderRadius: 10 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
-            }, 100);
+            document.getElementById('exportBtn').onclick = () => { let csv = "Client,Rating,Shoutout\n"; data.clients.forEach(c => csv += `${c.id},${c.rating},"${c.employeeShoutout || ''}"\n`); const blob = new Blob([csv],{type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_data.csv'; a.click(); alert('✅ CSV exported!'); };
+            document.getElementById('deleteBtn').onclick = () => { if(confirm('Delete all data?')) { localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], servicePerceptions:[], employeeShoutouts:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() })); showDashboard(); alert('✅ All data deleted.'); } };
         }
         
         // Initialize Supabase and load survey
