@@ -318,8 +318,6 @@
                 } else {
                     document.getElementById('feedbackForm').reportValidity();
                 }
-                // At the end of your submitSurveyData function, BEFORE the alert or thank you card
-await saveToSupabase(surveyData, clientId);
             });
             
             document.getElementById('newSurveyBtn').onclick = () => location.reload();
@@ -426,57 +424,5 @@ await saveToSupabase(surveyData, clientId);
         
         loadSurveyTool();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // Supabase connection - ADD THIS TO YOUR EXISTING SURVEY
-    const SUPABASE_URL = "https://jxbyfvghztsnvcixnzlr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YnlmdmdoenRzbnZjaXhuemxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTg3NzUsImV4cCI6MjA5NjIzNDc3NX0.2zweytKYGXnvnnXa2W1t48Rb4f08N8qSIrZuw0ZFEAo";
-    
-    let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // Save your existing submitSurveyData function - just add this line at the end
-    // Inside your submitSurveyData function, add: 
-    // await saveToSupabase(surveyData, clientId);
-    
-    async function saveToSupabase(surveyData, clientId) {
-        try {
-            await supabase.from('clients').insert([{
-                id: clientId,
-                client_type: surveyData.clientInfo.clientType,
-                phone: surveyData.clientInfo.phone,
-                visit_date: surveyData.clientInfo.visitDate,
-                services: JSON.stringify(surveyData.services),
-                rating: parseInt(surveyData.ratings.overall),
-                staff_rating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
-                cleanliness_rating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
-                wait_time_rating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
-                submission_date: new Date().toISOString()
-            }]);
-            
-            await supabase.from('feedback').insert([{
-                id: clientId + '_fb',
-                client_id: clientId,
-                type: surveyData.feedback.type,
-                text: surveyData.feedback.text,
-                recommendation: surveyData.feedback.recommendation,
-                improvements: surveyData.feedback.improvements,
-                date: new Date().toISOString()
-            }]);
-            
-            for (const svc of surveyData.services) {
-                const { data: existing } = await supabase.from('service_counts').select('count').eq('service', svc);
-                if (existing && existing.length > 0) {
-                    await supabase.from('service_counts').update({ count: existing[0].count + 1 }).eq('service', svc);
-                } else {
-                    await supabase.from('service_counts').insert([{ service: svc, count: 1 }]);
-                }
-            }
-            
-            console.log("Saved to Supabase!");
-        } catch(e) {
-            console.error("Supabase error:", e);
-        }
-    }
-</script>
 </body>
 </html>
