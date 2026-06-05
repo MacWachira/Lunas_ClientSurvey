@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUNAS Beauty Salon - Client Survey</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -146,7 +147,12 @@
         
         async function initSupabase() {
             const statusEl = document.getElementById('syncStatus');
+            if (!statusEl) return; // Safeguard if DOM is not ready
             try {
+                if (typeof window.supabase === 'undefined') {
+                    statusEl.innerHTML = "⚠️ SDK missing";
+                    return;
+                }
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 const { error } = await supabase.from('clients').select('id').limit(1);
                 if (error) {
@@ -210,9 +216,6 @@
             }));
         }
         
-        document.getElementById('navSurvey').onclick = () => switchSection('survey');
-        document.getElementById('navDashboard').onclick = () => switchSection('dashboard');
-        
         function switchSection(section) {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             if (section === 'survey') {
@@ -250,7 +253,7 @@
                     <div class="card-header"><h2><i class="fas fa-spa"></i> Services Received</h2><p>Select all that apply</p></div>
                     <form id="servicesForm">
                         <div class="services-grid">
-                            ${["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"].map(s => `<label class="service-checkbox"><input type="checkbox" name="service" value="${s}"><span>${s}</span></label>`).join('')}
+                            \${["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"].map(s => `<label class="service-checkbox"><input type="checkbox" name="service" value="\${s}"><span>\${s}</span></label>`).join('')}
                         </div>
                         <div class="form-group" style="margin-top:25px;"><label>If "Other", please specify:</label><input type="text" id="otherService"></div>
                     </form>
@@ -312,7 +315,7 @@
             const showCard = (n) => {
                 document.querySelectorAll('.survey-card').forEach(c => c.classList.remove('active'));
                 document.getElementById(`card${n}`).classList.add('active');
-                document.getElementById('progressFill').style.width = `${((n-1)/4)*100}%`;
+                document.getElementById('progressFill').style.width = `\${((n-1)/4)*100}%`;
             };
             
             document.getElementById('next1').onclick = () => { if(document.getElementById('clientInfoForm').checkValidity()) showCard(2); else document.getElementById('clientInfoForm').reportValidity(); };
@@ -419,20 +422,28 @@
             document.getElementById('dashboardSection').innerHTML = `
                 <div class="dashboard-header"><div><h1>Analytics Dashboard</h1><p>Client Feedback Insights</p></div><button class="logout-btn" id="logoutBtn">Logout</button></div>
                 <div class="stats-container">
-                    <div class="stat-card"><div class="stat-icon clients"><i class="fas fa-users"></i></div><div class="stat-info"><h3>${data.clients.length}</h3><p>Total Clients</p></div></div>
-                    <div class="stat-card"><div class="stat-icon rating"><i class="fas fa-star"></i></div><div class="stat-info"><h3>${avgRating}</h3><p>Average Rating</p></div></div>
-                    <div class="stat-card"><div class="stat-icon services"><i class="fas fa-spa"></i></div><div class="stat-info"><h3>${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</h3><p>Services Used</p></div></div>
-                    <div class="stat-card"><div class="stat-icon feedback"><i class="fas fa-comments"></i></div><div class="stat-info"><h3>${data.feedback.length}</h3><p>Feedbacks</p></div></div>
+                    <div class="stat-card"><div class="stat-icon clients"><i class="fas fa-users"></i></div><div class="stat-info"><h3>\${data.clients.length}</h3><p>Total Clients</p></div></div>
+                    <div class="stat-card"><div class="stat-icon rating"><i class="fas fa-star"></i></div><div class="stat-info"><h3>\${avgRating}</h3><p>Average Rating</p></div></div>
+                    <div class="stat-card"><div class="stat-icon services"><i class="fas fa-spa"></i></div><div class="stat-info"><h3>\${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</h3><p>Services Used</p></div></div>
+                    <div class="stat-card"><div class="stat-icon feedback"><i class="fas fa-comments"></i></div><div class="stat-info"><h3>\${data.feedback.length}</h3><p>Feedbacks</p></div></div>
                 </div>
-                <div class="dashboard-card"><h2>Recent Feedback</h2>${data.feedback.slice(-5).reverse().map(f => `<div class="feedback-item"><strong>${f.type}</strong><br>${f.text.substring(0,100)}<br><small>👍 ${f.recommendation}</small></div>`).join('') || '<p>No feedback yet</p>'}</div>
+                <div class="dashboard-card"><h2>Recent Feedback</h2>\${data.feedback.slice(-5).reverse().map(f => `<div class="feedback-item"><strong>\${f.type}</strong><br>\${f.text.substring(0,100)}<br><small>👍 \${f.recommendation}</small></div>`).join('') || '<p>No feedback yet</p>'}</div>
                 <div class="dashboard-card"><button class="btn btn-primary" id="exportBtn">Export CSV</button><button class="btn btn-danger" id="deleteBtn" style="margin-left:15px;">Delete All</button></div>
             `;
             document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('lunasLoggedIn'); loadDashboard(); };
-            document.getElementById('exportBtn').onclick = () => { let csv = "Client,Rating\n"; data.clients.forEach(c => csv += `${c.id},${c.rating}\n`); const blob = new Blob([csv],{type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_data.csv'; a.click(); alert('Exported!'); };
+            document.getElementById('exportBtn').onclick = () => { let csv = "Client,Rating\n"; data.clients.forEach(c => csv += `\${c.id},\${c.rating}\n`); const blob = new Blob([csv],{type:'text/csv'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'lunas_data.csv'; a.click(); alert('Exported!'); };
             document.getElementById('deleteBtn').onclick = () => { if(confirm('Delete all data?')) { localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() })); loadDashboard(); alert('Deleted.'); } };
         }
         
-        initSupabase().then(() => loadSurveyTool());
+        // Wrapped safe setup listener to confirm elements exist before compiling layouts
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('navSurvey').onclick = () => switchSection('survey');
+            document.getElementById('navDashboard').onclick = () => switchSection('dashboard');
+            
+            initSupabase().then(() => {
+                loadSurveyTool();
+            });
+        });
     </script>
 </body>
 </html>
