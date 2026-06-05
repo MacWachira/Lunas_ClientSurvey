@@ -6,6 +6,7 @@
     <title>LUNAS Beauty Salon - Client Survey & Analytics System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-color: #006850;
@@ -151,6 +152,103 @@
     <div id="toastMsg" class="toast-success"><i class="fas fa-check-circle"></i><span>Thank you! Your feedback has been recorded.</span><i class="fas fa-times-circle" style="margin-left: 12px;"></i></div>
 
     <script>
+        // ============================================
+        // SUPABASE CONFIGURATION - YOUR CREDENTIALS
+        // ============================================
+        const SUPABASE_URL = "https://jxbyfvghztsnvcixnzlr.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YnlmdmdoenRzbnZjaXhuemxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTg3NzUsImV4cCI6MjA5NjIzNDc3NX0.2zweytKYGXnvnnXa2W1t48Rb4f08N8qSIrZuw0ZFEAo";
+        
+        let supabase;
+        let dbConnected = false;
+        
+        async function initSupabase() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                // Test connection
+                const { error } = await supabase.from('clients').select('id').limit(1);
+                if (error) {
+                    console.warn("Supabase not ready:", error.message);
+                    dbConnected = false;
+                } else {
+                    console.log("✅ Supabase connected!");
+                    dbConnected = true;
+                }
+            } catch (err) {
+                console.error("Supabase init error:", err);
+                dbConnected = false;
+            }
+        }
+        
+        async function saveToSupabase(surveyData, clientId) {
+            if (!dbConnected) {
+                console.log("Supabase not connected, skipping cloud save");
+                return false;
+            }
+            try {
+                // Insert client
+                await supabase.from('clients').insert([{
+                    id: clientId,
+                    client_type: surveyData.clientInfo.clientType,
+                    phone: surveyData.clientInfo.phone,
+                    visit_date: surveyData.clientInfo.visitDate,
+                    services: JSON.stringify(surveyData.services),
+                    rating: parseInt(surveyData.ratings.overall),
+                    staff_rating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
+                    cleanliness_rating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
+                    wait_time_rating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
+                    employee_shoutout: surveyData.employeeShoutout,
+                    submission_date: new Date().toISOString()
+                }]);
+                
+                // Insert feedback
+                await supabase.from('feedback').insert([{
+                    id: clientId + '_fb',
+                    client_id: clientId,
+                    type: surveyData.feedback.type,
+                    text: surveyData.feedback.text,
+                    recommendation: surveyData.feedback.recommendation,
+                    improvements: surveyData.feedback.improvements,
+                    employee_shoutout: surveyData.employeeShoutout,
+                    date: new Date().toISOString()
+                }]);
+                
+                // Insert service perceptions
+                for (const sp of surveyData.servicePerceptions) {
+                    await supabase.from('service_perceptions').insert([{
+                        client_id: clientId,
+                        service: sp.service,
+                        rating: sp.rating,
+                        comment: sp.comment
+                    }]);
+                }
+                
+                // Update service counts
+                for (const svc of surveyData.services) {
+                    const { data: existing } = await supabase.from('service_counts').select('count').eq('service', svc);
+                    if (existing && existing.length > 0) {
+                        await supabase.from('service_counts').update({ count: existing[0].count + 1 }).eq('service', svc);
+                    } else {
+                        await supabase.from('service_counts').insert([{ service: svc, count: 1 }]);
+                    }
+                }
+                
+                // Insert employee shoutout
+                if (surveyData.employeeShoutout) {
+                    await supabase.from('employee_shoutouts').insert([{
+                        client_id: clientId,
+                        employee: surveyData.employeeShoutout,
+                        date: new Date().toISOString()
+                    }]);
+                }
+                
+                console.log("✅ Data saved to Supabase!");
+                return true;
+            } catch (err) {
+                console.error("Supabase save error:", err);
+                return false;
+            }
+        }
+        
         function showToast(msg) {
             const toast = document.getElementById('toastMsg');
             toast.querySelector('span').textContent = msg || '✨ Thank you for your feedback! ✨';
@@ -323,7 +421,7 @@
             document.getElementById('newSurveyBtn').onclick = () => location.reload();
         }
         
-        function submitSurveyData() {
+        async function submitSurveyData() {
             // Collect per-service ratings
             const serviceRatings = [];
             document.querySelectorAll('.service-check:checked').forEach(cb => {
@@ -350,6 +448,13 @@
             };
             
             const clientId = 'LUN' + Date.now().toString().slice(-8);
+            
+            // ============================================
+            // SAVE TO SUPABASE (CLOUD) - ADDED LINE
+            // ============================================
+            await saveToSupabase(surveyData, clientId);
+            
+            // Continue with existing localStorage save
             const businessData = JSON.parse(localStorage.getItem('lunasBusinessData'));
             
             businessData.clients.push({
@@ -422,7 +527,8 @@
             }, 100);
         }
         
-        loadSurveyTool();
+        // Initialize Supabase and load survey
+        initSupabase().then(() => loadSurveyTool());
     </script>
 </body>
 </html>
