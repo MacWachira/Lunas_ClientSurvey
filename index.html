@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LUNAS Beauty Salon - Cloud Survey System</title>
+    <title>LUNAS Beauty Salon - Client Survey & Analytics System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -12,6 +12,7 @@
             --primary-color: #006850;
             --secondary-color: #FBB040;
             --dark-color: #000000;
+            --light-color: #FFFFFF;
             --light-bg: #f8f9fa;
             --card-bg: #ffffff;
             --text-dark: #333333;
@@ -19,101 +20,345 @@
             --border-color: #e0e0e0;
             --danger-color: #e74c3c;
             --success-color: #2ecc71;
+            --warning-color: #f39c12;
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(145deg, #f0f4f8 0%, #e8edf2 100%); min-height: 100vh; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+        }
         
-        .main-header { background: linear-gradient(135deg, var(--primary-color), #00875a); padding: 20px 0; margin-bottom: 30px; }
-        .header-content { max-width: 1400px; margin: 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .logo { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 700; color: white; text-transform: uppercase; }
-        .tagline { font-size: 1rem; color: rgba(255,255,255,0.9); letter-spacing: 4px; margin-top: 5px; }
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .main-header {
+            background: linear-gradient(135deg, var(--primary-color), #00875a);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .tagline {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+        
         .nav-buttons { display: flex; gap: 15px; }
-        .nav-btn { padding: 12px 25px; background-color: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 40px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .nav-btn {
+            padding: 12px 25px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-btn:hover { background-color: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
         .nav-btn.active { background-color: var(--secondary-color); color: var(--dark-color); }
         
         #surveySection { display: block; }
         #dashboardSection { display: none; }
         
-        .survey-header { text-align: center; margin-bottom: 40px; padding: 35px; background: linear-gradient(135deg, rgba(0,104,80,0.08), rgba(251,176,64,0.08)); border-radius: 28px; }
+        .survey-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(0,104,80,0.1), rgba(251,176,64,0.1));
+            border-radius: 16px;
+        }
         .survey-title { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 15px; }
+        .survey-subtitle { font-size: 1.1rem; color: var(--text-light); max-width: 700px; margin: 0 auto; }
         
-        .progress-container { margin-bottom: 35px; }
-        .progress-bar { height: 8px; background-color: var(--border-color); border-radius: 10px; overflow: hidden; }
+        .progress-container { margin-bottom: 40px; }
+        .progress-bar { height: 6px; background-color: var(--border-color); border-radius: 3px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); width: 0%; transition: width 0.5s ease; }
         
-        .survey-card { background-color: var(--card-bg); border-radius: 32px; padding: 44px 48px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.12); margin-bottom: 30px; display: none; }
-        .survey-card.active { display: block; animation: fadeInUp 0.5s ease; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .survey-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+        .survey-card.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .card-header { margin-bottom: 30px; border-left: 4px solid var(--secondary-color); padding-left: 20px; }
-        .card-header h2 { font-size: 1.8rem; color: var(--primary-color); }
+        .card-header { margin-bottom: 30px; }
+        .card-header h2 { font-size: 1.8rem; color: var(--primary-color); margin-bottom: 10px; }
         
         .form-group { margin-bottom: 25px; }
-        label { display: block; font-weight: 600; margin-bottom: 10px; }
+        label { display: block; font-weight: 600; margin-bottom: 10px; color: var(--dark-color); }
         .required { color: var(--danger-color); }
-        input, select, textarea { width: 100%; padding: 16px 20px; border: 2px solid var(--border-color); border-radius: 20px; font-size: 1rem; background: white; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-color); }
-        textarea { min-height: 100px; resize: vertical; }
+        input, select, textarea {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0,104,80,0.1);
+        }
+        textarea { min-height: 120px; resize: vertical; }
         
-        .services-enhanced { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
-        .service-card-enh { background: #fafcff; border-radius: 20px; border: 2px solid var(--border-color); overflow: hidden; cursor: pointer; }
-        .service-card-enh.selected { border-color: var(--primary-color); background: white; }
-        .service-header-enh { display: flex; align-items: center; padding: 16px 18px; }
-        .service-header-enh input { width: 22px; height: 22px; margin-right: 14px; cursor: pointer; }
-        .service-header-enh span { font-weight: 600; flex: 1; cursor: pointer; }
-        .service-rating-enh { padding: 0 18px 18px 18px; background: white; border-top: 1px dashed var(--border-color); display: none; }
-        .service-card-enh.selected .service-rating-enh { display: block; }
-        .stars-enh { display: flex; gap: 8px; margin: 12px 0 10px 0; }
-        .stars-enh span { font-size: 1.6rem; cursor: pointer; color: #cbd5e1; }
-        .stars-enh span.active { color: var(--secondary-color); }
-        .comment-enh input { width: 100%; padding: 10px 14px; border-radius: 40px; border: 1px solid var(--border-color); }
+        .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 10px; }
+        .service-checkbox {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid var(--border-color);
+        }
+        .service-checkbox:hover { border-color: var(--primary-color); background-color: rgba(0,104,80,0.05); }
+        .service-checkbox input { width: auto; margin-right: 12px; }
         
-        .rating-container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
-        .rating-option { flex: 1; min-width: 100px; text-align: center; padding: 14px 10px; background: #f8f9fa; border-radius: 50px; cursor: pointer; border: 2px solid var(--border-color); }
-        .rating-option.selected { background: var(--primary-color); color: white; }
+        .rating-container { display: flex; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; gap: 10px; }
+        .rating-option {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            padding: 15px 10px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid var(--border-color);
+        }
+        .rating-option:hover { border-color: var(--primary-color); }
+        .rating-option.selected { border-color: var(--primary-color); background-color: rgba(0,104,80,0.08); }
+        .rating-option i { font-size: 1.5rem; margin-bottom: 6px; display: block; }
         
         .btn-container { display: flex; justify-content: space-between; margin-top: 40px; gap: 20px; }
-        .btn { padding: 16px 35px; border: none; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; flex: 1; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary-color), #00875a); color: white; }
-        .btn-primary:hover { transform: translateY(-3px); }
-        .btn-secondary { background: #f0f0f0; color: var(--dark-color); border: 1px solid var(--border-color); }
+        .btn {
+            padding: 16px 35px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+        }
+        .btn-primary { background: linear-gradient(to right, var(--primary-color), #00875a); color: white; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 7px 20px rgba(0,104,80,0.25); }
+        .btn-secondary { background-color: #f0f0f0; color: var(--dark-color); }
+        .btn-secondary:hover { background-color: #e0e0e0; }
+        .btn-danger { background: linear-gradient(to right, var(--danger-color), #c0392b); color: white; }
         
         .thank-you-card { text-align: center; padding: 60px 40px; display: none; }
         .thank-you-card.active { display: block; }
-        .thank-you-icon { font-size: 5rem; color: var(--primary-color); margin-bottom: 25px; }
+        .thank-you-icon { font-size: 5rem; color: var(--primary-color); margin-bottom: 30px; }
+        .thank-you-card h2 { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 20px; }
         
-        .social-icons { display: flex; justify-content: center; gap: 35px; margin: 30px 0; }
+        .social-icons { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin: 30px 0; }
         .social-icon { display: flex; flex-direction: column; align-items: center; text-decoration: none; }
-        .social-circle { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 2rem; color: white; }
+        .social-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            font-size: 2rem;
+            color: white;
+        }
         .instagram { background: linear-gradient(45deg, #405DE6, #833AB4, #E1306C); }
         .tiktok { background: linear-gradient(45deg, #000000, #25F4EE, #FE2C55); }
-        .whatsapp { background: #25D366; }
+        .whatsapp { background: linear-gradient(45deg, #25D366, #128C7E); }
         
-        .dashboard-header { background: linear-gradient(135deg, var(--primary-color), #00875a); border-radius: 28px; padding: 28px 35px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; }
-        .logout-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 12px 25px; border-radius: 40px; cursor: pointer; color: white; }
+        /* Dashboard Styles */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), #00875a);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-btn {
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
         .login-container { display: flex; justify-content: center; align-items: center; min-height: 60vh; }
-        .login-card { background: white; border-radius: 32px; padding: 50px; width: 100%; max-width: 450px; text-align: center; }
+        .login-card {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
         .login-error { color: var(--danger-color); margin-top: 15px; display: none; }
         
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .stat-card { background: white; border-radius: 24px; padding: 22px; border-bottom: 4px solid var(--secondary-color); }
-        .stat-number { font-size: 2.5rem; font-weight: 800; color: var(--primary-color); }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 28px; margin-bottom: 35px; }
-        .dashboard-card { background: white; border-radius: 28px; padding: 28px; }
-        .chart-container { height: 280px; margin-top: 15px; }
-        .feedback-item { padding: 18px; border-radius: 20px; margin-bottom: 14px; background: #fafcff; border-left: 5px solid var(--primary-color); }
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+        .stat-icon.clients { background: linear-gradient(135deg, var(--primary-color), #00875a); }
+        .stat-icon.rating { background: linear-gradient(135deg, var(--secondary-color), #f8a62b); }
+        .stat-icon.services { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .stat-icon.feedback { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        .stat-info h3 { font-size: 2.5rem; font-weight: 700; color: var(--dark-color); line-height: 1; margin-bottom: 5px; }
+        .stat-info p { color: var(--text-light); font-weight: 500; }
         
-        @media (max-width: 768px) { .container { padding: 15px; } .survey-card { padding: 28px 24px; } .services-enhanced { grid-template-columns: 1fr; } .btn-container { flex-direction: column; } .btn { width: 100%; } }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; margin-bottom: 40px; }
+        @media (max-width: 1100px) { .dashboard-grid { grid-template-columns: 1fr; } }
         
-        .toast-success { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 16px 28px; border-radius: 50px; display: flex; align-items: center; gap: 12px; z-index: 1000; transform: translateX(400px); transition: 0.3s; cursor: pointer; }
-        .toast-success.show { transform: translateX(0); }
-        .sync-status { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.7); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; z-index: 1000; }
+        .dashboard-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+        .chart-container { height: 300px; margin-top: 20px; }
+        
+        .service-list { max-height: 400px; overflow-y: auto; }
+        .service-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .service-count {
+            background-color: rgba(0,104,80,0.1);
+            color: var(--primary-color);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .feedback-item {
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+        }
+        .feedback-item.complaint { border-left-color: var(--danger-color); }
+        .feedback-item.suggestion { border-left-color: var(--warning-color); }
+        .feedback-item.compliment { border-left-color: var(--success-color); }
+        
+        .feedback-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .feedback-type {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .complaint-badge { background-color: rgba(231,76,60,0.1); color: var(--danger-color); }
+        .suggestion-badge { background-color: rgba(243,156,18,0.1); color: var(--warning-color); }
+        .compliment-badge { background-color: rgba(46,204,113,0.1); color: var(--success-color); }
+        
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .survey-card { padding: 20px; }
+            .services-grid { grid-template-columns: 1fr; }
+            .rating-container { flex-direction: column; }
+            .btn-container { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+        
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            z-index: 1000;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
-    <div class="sync-status" id="syncStatus">🔄 Connecting...</div>
+    <div class="sync-status" id="syncStatus">🔄 Connecting to database...</div>
     
     <div class="main-header">
         <div class="header-content">
@@ -130,9 +375,10 @@
         <section id="dashboardSection"></section>
     </div>
 
-    <div id="toastMsg" class="toast-success"><i class="fas fa-check-circle"></i><span>Thank you!</span><i class="fas fa-times-circle" style="margin-left: 12px;"></i></div>
-
     <script>
+        // ============================================================
+        // SUPABASE CONFIGURATION - YOUR CREDENTIALS
+        // ============================================================
         const SUPABASE_URL = "https://jxbyfvghztsnvcixnzlr.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YnlmdmdoenRzbnZjaXhuemxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTg3NzUsImV4cCI6MjA5NjIzNDc3NX0.2zweytKYGXnvnnXa2W1t48Rb4f08N8qSIrZuw0ZFEAo";
         
@@ -141,48 +387,55 @@
         
         async function initSupabase() {
             const statusEl = document.getElementById('syncStatus');
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            statusEl.innerHTML = '✅ Cloud ready';
-            statusEl.style.background = 'rgba(46, 204, 113, 0.9)';
-            dbConnected = true;
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                // Test connection
+                const { error } = await supabase.from('clients').select('id').limit(1);
+                if (error) {
+                    console.warn("Supabase not ready:", error.message);
+                    statusEl.innerHTML = "⚠️ Database not ready - run SQL setup";
+                    statusEl.style.background = "rgba(231, 76, 60, 0.9)";
+                    dbConnected = false;
+                } else {
+                    statusEl.innerHTML = "✅ Cloud connected";
+                    statusEl.style.background = "rgba(46, 204, 113, 0.9)";
+                    dbConnected = true;
+                }
+            } catch (err) {
+                statusEl.innerHTML = "⚠️ Connection failed";
+                dbConnected = false;
+            }
         }
         
-        async function saveToCloud(surveyData, clientId) {
+        async function saveToSupabase(surveyData, clientId) {
+            if (!dbConnected) return false;
             try {
+                // Insert client
                 await supabase.from('clients').insert([{
                     id: clientId,
                     client_type: surveyData.clientInfo.clientType,
-                    phone: surveyData.clientInfo.phone || null,
+                    phone: surveyData.clientInfo.phone,
                     visit_date: surveyData.clientInfo.visitDate,
                     services: JSON.stringify(surveyData.services),
                     rating: parseInt(surveyData.ratings.overall),
                     staff_rating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
                     cleanliness_rating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
                     wait_time_rating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
-                    employee_shoutout: surveyData.employeeShoutout || null,
                     submission_date: new Date().toISOString()
                 }]);
                 
+                // Insert feedback
                 await supabase.from('feedback').insert([{
                     id: clientId + '_fb',
                     client_id: clientId,
                     type: surveyData.feedback.type,
                     text: surveyData.feedback.text,
                     recommendation: surveyData.feedback.recommendation,
-                    improvements: surveyData.feedback.improvements || null,
-                    employee_shoutout: surveyData.employeeShoutout || null,
+                    improvements: surveyData.feedback.improvements,
                     date: new Date().toISOString()
                 }]);
                 
-                for (const sp of surveyData.servicePerceptions) {
-                    await supabase.from('service_perceptions').insert([{
-                        client_id: clientId,
-                        service: sp.service,
-                        rating: sp.rating,
-                        comment: sp.comment || null
-                    }]);
-                }
-                
+                // Update service counts
                 for (const svc of surveyData.services) {
                     const { data: existing } = await supabase.from('service_counts').select('count').eq('service', svc);
                     if (existing && existing.length > 0) {
@@ -192,40 +445,33 @@
                     }
                 }
                 
-                if (surveyData.employeeShoutout) {
-                    await supabase.from('employee_shoutouts').insert([{
-                        client_id: clientId,
-                        employee: surveyData.employeeShoutout,
-                        date: new Date().toISOString()
-                    }]);
-                }
-                
+                console.log("Saved to Supabase!");
                 return true;
             } catch (err) {
-                console.error("Cloud save error:", err);
+                console.error("Supabase save error:", err);
                 return false;
             }
         }
         
-        function showToast(msg) {
-            const toast = document.getElementById('toastMsg');
-            toast.querySelector('span').textContent = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 4000);
-        }
+        // ========== YOUR ORIGINAL WORKING CODE BELOW (unchanged except for saving to Supabase) ==========
         
         if (!localStorage.getItem('lunasBusinessData')) {
-            localStorage.setItem('lunasBusinessData', JSON.stringify({
-                clients: [], services: [], feedback: [], servicePerceptions: [], employeeShoutouts: [],
-                newClientsCount: 0, returningClientsCount: 0, startDate: new Date().toISOString()
-            }));
+            const initialData = {
+                clients: [],
+                services: [],
+                feedback: [],
+                newClientsCount: 0,
+                returningClientsCount: 0,
+                startDate: new Date().toISOString()
+            };
+            localStorage.setItem('lunasBusinessData', JSON.stringify(initialData));
         }
         
-        document.getElementById('navSurvey').onclick = () => switchSection('survey');
-        document.getElementById('navDashboard').onclick = () => switchSection('dashboard');
+        document.getElementById('navSurvey').addEventListener('click', function() { switchToSection('survey'); });
+        document.getElementById('navDashboard').addEventListener('click', function() { switchToSection('dashboard'); });
         
-        function switchSection(section) {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        function switchToSection(section) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             if (section === 'survey') {
                 document.getElementById('navSurvey').classList.add('active');
                 document.getElementById('surveySection').style.display = 'block';
@@ -239,82 +485,89 @@
             }
         }
         
-        const SERVICES = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation and Styling","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock Installation/Retouch","Flat Ironing","Other"];
-        
         function loadSurveyTool() {
-            let servicesHtml = `<div class="services-enhanced">`;
-            SERVICES.forEach(svc => {
-                servicesHtml += `
-                    <div class="service-card-enh">
-                        <div class="service-header-enh">
-                            <input type="checkbox" name="service" class="service-check" value="${svc}">
-                            <span>${svc}</span>
-                        </div>
-                        <div class="service-rating-enh">
-                            <div class="stars-enh">${[1,2,3,4,5].map(s => `<span data-star="${s}">★</span>`).join('')}</div>
-                            <div class="comment-enh"><input type="text" class="svc-comment" placeholder="Your experience with ${svc}..."></div>
-                        </div>
-                    </div>
-                `;
-            });
-            servicesHtml += `</div><div class="form-group"><label>If "Other", please specify:</label><input type="text" id="otherServiceField" placeholder="Describe the service"></div>`;
-            
             const surveyHTML = `
-                <div class="survey-header"><h1 class="survey-title">✨ Client Satisfaction Survey ✨</h1><p>Thank you for choosing LUNAS.</p></div>
+                <div class="survey-header">
+                    <h1 class="survey-title">Client Satisfaction Survey</h1>
+                    <p class="survey-subtitle">Thank you for choosing LUNAS. Your feedback helps us improve our services.</p>
+                </div>
                 <div class="progress-container"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div>
                 
                 <div class="survey-card active" id="card1">
-                    <div class="card-header"><h2><i class="fas fa-user"></i> Contact Information</h2></div>
+                    <div class="card-header"><h2><i class="fas fa-user"></i> Contact Information</h2><p>We'd love to stay in touch</p></div>
                     <form id="clientInfoForm">
-                        <div class="form-group"><label>Phone Number</label><input type="tel" id="clientPhone"></div>
+                        <div class="form-group"><label>Phone Number</label><input type="tel" id="clientPhone" placeholder="Enter your phone number"></div>
                         <div class="form-group"><label>Date of Visit <span class="required">*</span></label><input type="date" id="visitDate" required></div>
-                        <div class="form-group"><label>First visit? <span class="required">*</span></label><select id="clientType" required><option value="">Select</option><option value="new">Yes, first time</option><option value="returning">No, I've been here before</option></select></div>
+                        <div class="form-group"><label>Is this your first visit to LUNAS? <span class="required">*</span></label><select id="clientType" required><option value="">Select an option</option><option value="new">Yes, first time</option><option value="returning">No, I've been here before</option></select></div>
                     </form>
-                    <div class="btn-container"><button class="btn btn-secondary" disabled>Previous</button><button class="btn btn-primary" id="next1">Next →</button></div>
+                    <div class="btn-container"><button class="btn btn-secondary" disabled>Previous</button><button class="btn btn-primary" id="next1">Next <i class="fas fa-arrow-right"></i></button></div>
                 </div>
                 
                 <div class="survey-card" id="card2">
-                    <div class="card-header"><h2><i class="fas fa-spa"></i> Services & Your Experience</h2><p>Select services, rate with stars, add a comment</p></div>
-                    <form id="servicesForm">${servicesHtml}</form>
-                    <div class="form-group" style="margin-top:25px; background: #FFF9EF; padding: 22px; border-radius: 24px;">
-                        <label>🌟 Shout-out to an amazing employee!</label>
-                        <textarea id="employeeShoutoutField" rows="2" placeholder="e.g., Sarah made my nails perfect!"></textarea>
-                    </div>
-                    <div class="btn-container"><button class="btn btn-secondary" id="prev2">← Back</button><button class="btn btn-primary" id="next2">Next →</button></div>
+                    <div class="card-header"><h2><i class="fas fa-spa"></i> Services Received</h2><p>Which services did you enjoy today? (Select all that apply)</p></div>
+                    <form id="servicesForm">
+                        <div class="services-grid">
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Gel Polish"><span>Gel Polish</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Tips"><span>Tips</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Builder Gel"><span>Builder Gel</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Gumgel Overlay"><span>Gumgel Overlay</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Gumgel Sculpting"><span>Gumgel Sculpting</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Pedicure"><span>Pedicure</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Manicure"><span>Manicure</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Piercing"><span>Piercing</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Wig Installation and Styling"><span>Wig Installation & Styling</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Wig Laundry"><span>Wig Laundry</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Eyelash Extension"><span>Eyelash Extension</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Waxing"><span>Waxing</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Facial"><span>Facial</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Massage"><span>Massage</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Braiding"><span>Braiding</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Wash and Blow"><span>Wash and Blow</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Brow Shaping"><span>Brow Shaping</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Dreadlock Installation/Retouch"><span>Dreadlock Installation/Retouch</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Flat Ironing"><span>Flat Ironing</span></label>
+                            <label class="service-checkbox"><input type="checkbox" name="service" value="Other"><span>Other Service</span></label>
+                        </div>
+                        <div class="form-group" style="margin-top:25px;"><label for="otherService">If "Other", please specify:</label><input type="text" id="otherService" placeholder="Describe the service you received"></div>
+                    </form>
+                    <div class="btn-container"><button class="btn btn-secondary" id="prev2"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="next2">Next <i class="fas fa-arrow-right"></i></button></div>
                 </div>
                 
                 <div class="survey-card" id="card3">
-                    <div class="card-header"><h2><i class="fas fa-star"></i> Service Quality</h2></div>
+                    <div class="card-header"><h2><i class="fas fa-star"></i> Service Quality</h2><p>How would you rate the quality of services you received?</p></div>
                     <form id="qualityForm">
-                        <div class="form-group"><label>Overall Service Quality <span class="required">*</span></label><div class="rating-container" id="ratingContainer"><div class="rating-option" data-value="1">Poor</div><div class="rating-option" data-value="2">Fair</div><div class="rating-option" data-value="3">Good</div><div class="rating-option" data-value="4">Very Good</div><div class="rating-option" data-value="5">Excellent</div></div><input type="hidden" id="overallRating" required></div>
-                        <div class="form-group"><label>Staff Friendliness</label><select id="staffRating"><option value="">Select</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
-                        <div class="form-group"><label>Cleanliness</label><select id="cleanlinessRating"><option value="">Select</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
-                        <div class="form-group"><label>Wait Time</label><select id="waitTimeRating"><option value="">Select</option><option value="5">Excellent - No wait</option><option value="4">Very Good - Minimal</option><option value="3">Good - Reasonable</option><option value="2">Fair - Longer</option><option value="1">Poor - Excessive</option></select></div>
+                        <div class="form-group"><label>Overall Service Quality <span class="required">*</span></label><div class="rating-container"><div class="rating-option poor" data-value="1"><i class="fas fa-frown"></i><div>Poor</div></div><div class="rating-option fair" data-value="2"><i class="fas fa-meh"></i><div>Fair</div></div><div class="rating-option good" data-value="3"><i class="fas fa-smile"></i><div>Good</div></div><div class="rating-option very-good" data-value="4"><i class="fas fa-smile-beam"></i><div>Very Good</div></div><div class="rating-option excellent" data-value="5"><i class="fas fa-grin-stars"></i><div>Excellent</div></div></div><input type="hidden" id="overallRating" required></div>
+                        <div class="form-group"><label>Staff Friendliness & Professionalism</label><select id="staffRating"><option value="">Select rating</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
+                        <div class="form-group"><label>Cleanliness of the Salon/Spa</label><select id="cleanlinessRating"><option value="">Select rating</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
+                        <div class="form-group"><label>Wait Time & Appointment Punctuality</label><select id="waitTimeRating"><option value="">Select rating</option><option value="5">Excellent - No wait</option><option value="4">Very Good - Minimal wait</option><option value="3">Good - Reasonable wait</option><option value="2">Fair - Longer than expected</option><option value="1">Poor - Excessive wait</option></select></div>
                     </form>
-                    <div class="btn-container"><button class="btn btn-secondary" id="prev3">← Back</button><button class="btn btn-primary" id="next3">Next →</button></div>
+                    <div class="btn-container"><button class="btn btn-secondary" id="prev3"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="next3">Next <i class="fas fa-arrow-right"></i></button></div>
                 </div>
                 
                 <div class="survey-card" id="card4">
-                    <div class="card-header"><h2><i class="fas fa-comment-dots"></i> Your Feedback</h2></div>
+                    <div class="card-header"><h2><i class="fas fa-comment-dots"></i> Your Feedback</h2><p>Please share any additional comments, suggestions, or concerns</p></div>
                     <form id="feedbackForm">
-                        <div class="form-group"><label>Feedback Type <span class="required">*</span></label><select id="feedbackType" required><option value="">Select</option><option value="compliment">Compliment</option><option value="suggestion">Suggestion</option><option value="complaint">Complaint</option></select></div>
-                        <div class="form-group"><label>Your Feedback <span class="required">*</span></label><textarea id="feedbackText" required></textarea></div>
-                        <div class="form-group"><label>Would you recommend us? <span class="required">*</span></label><select id="recommendation" required><option value="">Select</option><option value="yes-definitely">Yes, definitely</option><option value="yes-probably">Yes, probably</option><option value="not-sure">Not sure</option><option value="probably-not">Probably not</option><option value="no">No</option></select></div>
-                        <div class="form-group"><label>How can we improve?</label><textarea id="improvementSuggestions"></textarea></div>
+                        <div class="form-group"><label>Type of Feedback <span class="required">*</span></label><select id="feedbackType" required><option value="">Select feedback type</option><option value="compliment">Compliment</option><option value="suggestion">Suggestion</option><option value="complaint">Complaint</option></select></div>
+                        <div class="form-group"><label>Your Detailed Feedback <span class="required">*</span></label><textarea id="feedbackText" placeholder="Please share your detailed feedback..." required></textarea></div>
+                        <div class="form-group"><label>Would you recommend us to friends or family? <span class="required">*</span></label><select id="recommendation" required><option value="">Select an option</option><option value="yes-definitely">Yes, definitely</option><option value="yes-probably">Yes, probably</option><option value="not-sure">Not sure</option><option value="probably-not">Probably not</option><option value="no">No</option></select></div>
+                        <div class="form-group"><label>How can we improve our services?</label><textarea id="improvementSuggestions" placeholder="Any suggestions for improvement?"></textarea></div>
                     </form>
-                    <div class="btn-container"><button class="btn btn-secondary" id="prev4">← Back</button><button class="btn btn-primary" id="submitSurveyBtn">Submit Survey ✨</button></div>
+                    <div class="btn-container"><button class="btn btn-secondary" id="prev4"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="submitSurvey">Submit Survey <i class="fas fa-paper-plane"></i></button></div>
                 </div>
                 
                 <div class="survey-card thank-you-card" id="thankYouCard">
                     <div class="thank-you-icon"><i class="fas fa-heart"></i></div>
                     <h2>Thank You!</h2>
-                    <p>Your feedback has been submitted.</p>
-                    <div class="social-icons">
-                        <a href="https://www.instagram.com/lunas_parlour" target="_blank" class="social-icon"><div class="social-circle instagram"><i class="fab fa-instagram"></i></div><div>Instagram</div></a>
-                        <a href="https://www.tiktok.com/@lunasbeautyparlour" target="_blank" class="social-icon"><div class="social-circle tiktok"><i class="fab fa-tiktok"></i></div><div>TikTok</div></a>
-                        <a href="https://wa.me/233700422752" target="_blank" class="social-icon"><div class="social-circle whatsapp"><i class="fab fa-whatsapp"></i></div><div>WhatsApp</div></a>
+                    <p>Your feedback has been successfully submitted. We truly value your input and will use it to enhance our services.</p>
+                    <div class="social-media-section">
+                        <div style="font-size:1.3rem; margin-bottom:20px;">Stay Connected With LUNAS</div>
+                        <div class="social-icons">
+                            <a href="https://www.instagram.com/lunas_parlour?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" class="social-icon"><div class="social-circle instagram"><i class="fab fa-instagram"></i></div><div>Instagram</div></a>
+                            <a href="https://www.tiktok.com/@lunasbeautyparlour?is_from_webapp=1&sender_device=pc" target="_blank" class="social-icon"><div class="social-circle tiktok"><i class="fab fa-tiktok"></i></div><div>TikTok</div></a>
+                            <a href="https://wa.me/233700422752" target="_blank" class="social-icon"><div class="social-circle whatsapp"><i class="fab fa-whatsapp"></i></div><div>WhatsApp</div></a>
+                        </div>
                     </div>
-                    <button class="btn btn-primary" id="newSurveyBtn" style="max-width:300px; margin:30px auto 0;">Submit Another</button>
+                    <button class="btn btn-primary" id="newSurvey" style="max-width:300px; margin:40px auto 0;"><i class="fas fa-redo"></i> Submit Another Feedback</button>
                 </div>
             `;
             document.getElementById('surveySection').innerHTML = surveyHTML;
@@ -326,172 +579,240 @@
             document.getElementById('visitDate').value = today;
             document.getElementById('visitDate').max = today;
             
-            document.querySelectorAll('.service-card-enh').forEach(card => {
-                const chk = card.querySelector('.service-check');
-                card.addEventListener('click', (e) => {
-                    if (e.target.tagName !== 'INPUT') {
-                        chk.checked = !chk.checked;
-                        if (chk.checked) card.classList.add('selected');
-                        else card.classList.remove('selected');
-                    }
-                });
-                chk.addEventListener('change', () => {
-                    if (chk.checked) card.classList.add('selected');
-                    else card.classList.remove('selected');
-                });
-            });
-            
-            document.querySelectorAll('.stars-enh').forEach(stars => {
-                const starSpans = stars.querySelectorAll('span');
-                starSpans.forEach(star => {
-                    star.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        const val = parseInt(this.dataset.star);
-                        starSpans.forEach((s, i) => {
-                            if (i < val) s.classList.add('active');
-                            else s.classList.remove('active');
-                        });
-                    });
-                });
-            });
-            
-            document.querySelectorAll('#ratingContainer .rating-option').forEach(opt => {
-                opt.addEventListener('click', function() {
-                    document.getElementById('overallRating').value = this.dataset.value;
-                    document.querySelectorAll('#ratingContainer .rating-option').forEach(o => o.classList.remove('selected'));
+            document.querySelectorAll('.rating-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.getElementById('overallRating').value = this.getAttribute('data-value');
+                    document.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
                     this.classList.add('selected');
                 });
             });
             
-            const showCard = (n) => {
-                document.querySelectorAll('.survey-card').forEach(c => c.classList.remove('active'));
-                document.getElementById(`card${n}`).classList.add('active');
-                document.getElementById('progressFill').style.width = `${((n-1)/4)*100}%`;
-            };
+            let currentCard = 1;
+            const totalCards = 4;
             
-            document.getElementById('next1').onclick = () => { if(document.getElementById('clientInfoForm').checkValidity()) showCard(2); else document.getElementById('clientInfoForm').reportValidity(); };
-            document.getElementById('next2').onclick = () => { if(document.querySelectorAll('.service-check:checked').length > 0) showCard(3); else alert('Please select at least one service.'); };
-            document.getElementById('next3').onclick = () => { if(document.getElementById('overallRating').value) showCard(4); else alert('Please rate overall service quality.'); };
-            document.getElementById('prev2').onclick = () => showCard(1);
-            document.getElementById('prev3').onclick = () => showCard(2);
-            document.getElementById('prev4').onclick = () => showCard(3);
+            function showCard(cardNumber) {
+                document.querySelectorAll('.survey-card').forEach(card => card.classList.remove('active'));
+                document.getElementById(`card${cardNumber}`).classList.add('active');
+                document.getElementById('progressFill').style.width = `${((cardNumber - 1) / totalCards) * 100}%`;
+                currentCard = cardNumber;
+            }
             
-            document.getElementById('submitSurveyBtn').onclick = async function() {
+            document.getElementById('next1').addEventListener('click', function() {
+                if (document.getElementById('clientInfoForm').checkValidity()) showCard(2);
+                else document.getElementById('clientInfoForm').reportValidity();
+            });
+            
+            document.getElementById('next2').addEventListener('click', function() {
+                const selectedServices = Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => cb.value);
+                if (selectedServices.length === 0) { alert('Please select at least one service.'); return; }
+                showCard(3);
+            });
+            
+            document.getElementById('next3').addEventListener('click', function() {
+                if (document.getElementById('overallRating').value) showCard(4);
+                else alert('Please rate the overall service quality.');
+            });
+            
+            document.getElementById('prev2').addEventListener('click', () => showCard(1));
+            document.getElementById('prev3').addEventListener('click', () => showCard(2));
+            document.getElementById('prev4').addEventListener('click', () => showCard(3));
+            
+            document.getElementById('submitSurvey').addEventListener('click', async function() {
                 if (document.getElementById('feedbackForm').checkValidity()) {
                     await submitSurveyData();
                 } else {
                     document.getElementById('feedbackForm').reportValidity();
                 }
-            };
+            });
             
-            document.getElementById('newSurveyBtn').onclick = () => location.reload();
+            document.getElementById('newSurvey')?.addEventListener('click', function() {
+                document.getElementById('clientInfoForm').reset();
+                document.getElementById('servicesForm').reset();
+                document.getElementById('qualityForm').reset();
+                document.getElementById('feedbackForm').reset();
+                document.getElementById('visitDate').value = today;
+                document.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
+                document.getElementById('overallRating').value = '';
+                document.getElementById('thankYouCard').classList.remove('active');
+                showCard(1);
+            });
         }
         
         async function submitSurveyData() {
-            const serviceRatings = [];
-            document.querySelectorAll('.service-check:checked').forEach(cb => {
-                let svc = cb.value;
-                const card = cb.closest('.service-card-enh');
-                const starCount = card.querySelectorAll('.stars-enh span.active').length;
-                const comment = card.querySelector('.svc-comment')?.value || '';
-                serviceRatings.push({ service: svc, rating: starCount, comment: comment });
-            });
-            
-            const otherVal = document.getElementById('otherServiceField')?.value;
-            if (otherVal && serviceRatings.some(s => s.service === 'Other')) {
-                const idx = serviceRatings.findIndex(s => s.service === 'Other');
-                if (idx !== -1) serviceRatings[idx].service = otherVal;
-            }
-            
             const surveyData = {
-                clientInfo: { phone: document.getElementById('clientPhone').value, visitDate: document.getElementById('visitDate').value, clientType: document.getElementById('clientType').value },
-                services: serviceRatings.map(s => s.service),
-                ratings: { overall: document.getElementById('overallRating').value, staff: document.getElementById('staffRating').value, cleanliness: document.getElementById('cleanlinessRating').value, waitTime: document.getElementById('waitTimeRating').value },
-                feedback: { type: document.getElementById('feedbackType').value, text: document.getElementById('feedbackText').value, recommendation: document.getElementById('recommendation').value, improvements: document.getElementById('improvementSuggestions').value },
-                employeeShoutout: document.getElementById('employeeShoutoutField').value,
-                servicePerceptions: serviceRatings
+                clientInfo: {
+                    phone: document.getElementById('clientPhone').value || null,
+                    visitDate: document.getElementById('visitDate').value,
+                    clientType: document.getElementById('clientType').value
+                },
+                services: Array.from(document.querySelectorAll('input[name="service"]:checked')).map(cb => {
+                    if (cb.value === 'Other') {
+                        const otherService = document.getElementById('otherService').value;
+                        return otherService || cb.value;
+                    }
+                    return cb.value;
+                }),
+                ratings: {
+                    overall: document.getElementById('overallRating').value,
+                    staff: document.getElementById('staffRating').value || null,
+                    cleanliness: document.getElementById('cleanlinessRating').value || null,
+                    waitTime: document.getElementById('waitTimeRating').value || null
+                },
+                feedback: {
+                    type: document.getElementById('feedbackType').value,
+                    text: document.getElementById('feedbackText').value,
+                    recommendation: document.getElementById('recommendation').value,
+                    improvements: document.getElementById('improvementSuggestions').value || null,
+                    date: new Date().toISOString()
+                }
             };
             
             const clientId = 'LUN' + Date.now().toString().slice(-8);
             
-            const saved = await saveToCloud(surveyData, clientId);
+            // Save to Supabase (cloud)
+            await saveToSupabase(surveyData, clientId);
             
+            // Save to localStorage (backup)
             const businessData = JSON.parse(localStorage.getItem('lunasBusinessData'));
             businessData.clients.push({
-                id: clientId, type: surveyData.clientInfo.clientType, phone: surveyData.clientInfo.phone, visitDate: surveyData.clientInfo.visitDate,
-                services: surveyData.services, rating: parseInt(surveyData.ratings.overall),
+                id: clientId, type: surveyData.clientInfo.clientType, phone: surveyData.clientInfo.phone,
+                visitDate: surveyData.clientInfo.visitDate, services: surveyData.services,
+                rating: parseInt(surveyData.ratings.overall),
                 staffRating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
                 cleanlinessRating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
                 waitTimeRating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
-                employeeShoutout: surveyData.employeeShoutout, submissionDate: new Date().toISOString()
+                submissionDate: new Date().toISOString()
             });
             
-            if (surveyData.clientInfo.clientType === 'new') businessData.newClientsCount++; else businessData.returningClientsCount++;
+            if (surveyData.clientInfo.clientType === 'new') businessData.newClientsCount++;
+            else businessData.returningClientsCount++;
             
-            surveyData.services.forEach(svc => { const ex = businessData.services.find(s => s.name === svc); if(ex) ex.count++; else businessData.services.push({ name: svc, count: 1 }); });
-            surveyData.servicePerceptions.forEach(sp => businessData.servicePerceptions.push(sp));
-            if (surveyData.employeeShoutout) businessData.employeeShoutouts.push({ employee: surveyData.employeeShoutout });
-            businessData.feedback.push({ type: surveyData.feedback.type, text: surveyData.feedback.text, recommendation: surveyData.feedback.recommendation });
+            surveyData.services.forEach(serviceName => {
+                const existing = businessData.services.find(s => s.name === serviceName);
+                if (existing) existing.count++;
+                else businessData.services.push({ name: serviceName, count: 1 });
+            });
+            
+            businessData.feedback.push({
+                id: clientId, type: surveyData.feedback.type, text: surveyData.feedback.text,
+                recommendation: surveyData.feedback.recommendation, improvements: surveyData.feedback.improvements,
+                date: new Date().toISOString()
+            });
             
             localStorage.setItem('lunasBusinessData', JSON.stringify(businessData));
             
             document.getElementById('thankYouCard').classList.add('active');
             document.getElementById('card4').classList.remove('active');
             document.getElementById('progressFill').style.width = '100%';
-            showToast(saved ? '✨ Saved to cloud! ✨' : '✨ Saved locally! ✨');
+            
+            setTimeout(() => {
+                alert('Thank you for your feedback! Your experience has been recorded.');
+            }, 500);
         }
         
-        async function loadDashboard() {
-            if (localStorage.getItem('lunasLoggedIn') === 'true') showDashboard();
-            else showLogin();
+        // Dashboard functions (your original working code)
+        function loadDashboard() {
+            if (localStorage.getItem('lunasLoggedIn') !== 'true') showLogin();
+            else showDashboard();
         }
         
         function showLogin() {
-            document.getElementById('dashboardSection').innerHTML = `<div class="login-container"><div class="login-card"><i class="fas fa-chart-line" style="font-size:3rem; color:var(--primary-color);"></i><h2>LUNAS Analytics</h2><div class="form-group"><input type="text" id="username" placeholder="Username"></div><div class="form-group"><input type="password" id="password" placeholder="Password"></div><button class="btn btn-primary" id="loginBtn">Login</button><div class="login-error" id="loginError">Username: admin | Password: lunas2025</div></div></div>`;
-            document.getElementById('loginBtn').onclick = () => {
+            const loginHTML = `
+                <div class="login-container">
+                    <div class="login-card">
+                        <div style="font-size:3rem; color:var(--primary-color);"><i class="fas fa-chart-line"></i></div>
+                        <div style="font-size:1.8rem; font-weight:700; margin:10px 0;">LUNAS Analytics</div>
+                        <p style="margin-bottom:30px;">Client Feedback Analysis Dashboard</p>
+                        <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Enter admin username"></div>
+                        <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="Enter password"></div>
+                        <button class="btn btn-primary" id="loginBtn" style="width:100%;"><i class="fas fa-sign-in-alt"></i> Login to Dashboard</button>
+                        <div class="login-error" id="loginError">Invalid username or password. Try "admin" / "lunas2025"</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('dashboardSection').innerHTML = loginHTML;
+            document.getElementById('loginBtn').addEventListener('click', function() {
                 if (document.getElementById('username').value === 'admin' && document.getElementById('password').value === 'lunas2025') {
                     localStorage.setItem('lunasLoggedIn', 'true');
-                    loadDashboard();
-                } else document.getElementById('loginError').style.display = 'block';
-            };
+                    showDashboard();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            });
         }
         
         function showDashboard() {
             const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
             const avgRating = data.clients.length ? (data.clients.reduce((a,b)=>a+(b.rating||0),0)/data.clients.length).toFixed(1) : '0.0';
             
-            document.getElementById('dashboardSection').innerHTML = `
-                <div class="dashboard-header"><div><h1>Analytics Dashboard</h1><p>Client Feedback Insights</p></div><button class="logout-btn" id="logoutBtn">Logout</button></div>
-                <div class="stats-grid">
-                    <div class="stat-card"><div class="stat-number">${data.clients.length}</div><div>Total Clients</div><small>${data.newClientsCount} new · ${data.returningClientsCount} returning</small></div>
-                    <div class="stat-card"><div class="stat-number">${avgRating}</div><div>Average Rating</div></div>
-                    <div class="stat-card"><div class="stat-number">${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</div><div>Services Used</div></div>
-                    <div class="stat-card"><div class="stat-number">${data.feedback.length}</div><div>Feedbacks</div></div>
+            const dashboardHTML = `
+                <div class="dashboard-header"><div><h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1><p>Client Feedback Analysis & Service Insights</p></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button></div>
+                <div class="stats-container">
+                    <div class="stat-card"><div class="stat-icon clients"><i class="fas fa-users"></i></div><div class="stat-info"><h3>${data.clients.length}</h3><p>Total Clients Surveyed</p></div></div>
+                    <div class="stat-card"><div class="stat-icon rating"><i class="fas fa-star"></i></div><div class="stat-info"><h3>${avgRating}</h3><p>Average Rating</p></div></div>
+                    <div class="stat-card"><div class="stat-icon services"><i class="fas fa-spa"></i></div><div class="stat-info"><h3>${data.clients.reduce((a,c)=>a+(c.services?.length||0),0)}</h3><p>Services Received</p></div></div>
+                    <div class="stat-card"><div class="stat-icon feedback"><i class="fas fa-comments"></i></div><div class="stat-info"><h3>${data.feedback.length}</h3><p>Feedback Received</p></div></div>
                 </div>
-                <div class="dashboard-card"><h2>Recent Feedback</h2>${data.feedback.slice(-5).reverse().map(fb => `<div class="feedback-item"><strong>${fb.type}</strong><br>${fb.text.substring(0,100)}<br><small>👍 ${fb.recommendation}</small></div>`).join('') || '<p>No feedback yet</p>'}</div>
-                <div class="dashboard-card"><button class="btn btn-primary" id="exportBtn">Export CSV</button><button class="btn btn-danger" id="deleteBtn" style="margin-left:15px;">Delete All</button></div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card"><h2><i class="fas fa-chart-pie"></i> Client Demographics</h2><div class="chart-container"><canvas id="clientChart"></canvas></div></div>
+                    <div class="dashboard-card"><h2><i class="fas fa-chart-bar"></i> Most Received Services</h2><div class="chart-container"><canvas id="serviceChart"></canvas></div></div>
+                </div>
+                <div class="dashboard-card"><h2><i class="fas fa-trophy"></i> Service Popularity</h2><div class="service-list" id="serviceList">${generateServiceList(data)}</div></div>
+                <div class="dashboard-card"><h2><i class="fas fa-comments"></i> Recent Client Feedback</h2><div id="feedbackList">${generateFeedbackList(data)}</div></div>
+                <div class="dashboard-card"><div style="display:flex; gap:15px; flex-wrap:wrap;"><button class="btn btn-primary" id="exportBtn"><i class="fas fa-download"></i> Export All Data</button><button class="btn btn-danger" id="deleteBtn"><i class="fas fa-trash-alt"></i> Delete All Responses</button><button class="btn btn-secondary" id="refreshBtn"><i class="fas fa-sync-alt"></i> Refresh Dashboard</button></div></div>
+                <div style="text-align:center; padding:20px;"><p>LUNAS Client Feedback Analytics | Updated: ${new Date().toLocaleString()}</p></div>
             `;
+            document.getElementById('dashboardSection').innerHTML = dashboardHTML;
             
             document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('lunasLoggedIn'); loadDashboard(); };
-            document.getElementById('exportBtn').onclick = () => {
-                let csv = "Client,Rating,Shoutout\n";
-                data.clients.forEach(c => csv += `${c.id},${c.rating},"${c.employeeShoutout || ''}"\n`);
-                const blob = new Blob([csv], {type:'text/csv'});
-                const a = document.createElement('a');
-                a.href = URL.createObjectURL(blob);
-                a.download = 'lunas_data.csv';
-                a.click();
-                alert('✅ CSV exported!');
-            };
-            document.getElementById('deleteBtn').onclick = () => {
-                if (confirm('Delete all data?')) {
-                    localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], servicePerceptions:[], employeeShoutouts:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() }));
-                    loadDashboard();
-                    alert('✅ All data deleted.');
-                }
-            };
+            document.getElementById('refreshBtn')?.addEventListener('click', () => showDashboard());
+            document.getElementById('exportBtn')?.addEventListener('click', () => exportData());
+            document.getElementById('deleteBtn')?.addEventListener('click', () => deleteAllResponses());
+            
+            setTimeout(() => {
+                const newC = data.clients.filter(c => c.type === 'new').length;
+                const retC = data.clients.filter(c => c.type === 'returning').length;
+                new Chart(document.getElementById('clientChart'), { type: 'doughnut', data: { labels: ['New Clients', 'Returning Clients'], datasets: [{ data: [newC, retC], backgroundColor: ['#006850', '#FBB040'] }] }, options: { responsive: true } });
+                const topServices = [...data.services].sort((a,b)=>b.count-a.count).slice(0,6);
+                if (topServices.length) new Chart(document.getElementById('serviceChart'), { type: 'bar', data: { labels: topServices.map(s=>s.name), datasets: [{ label: 'Times Received', data: topServices.map(s=>s.count), backgroundColor: '#006850', borderRadius: 8 }] }, options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } } });
+            }, 100);
         }
         
+        function generateServiceList(data) {
+            if (data.services.length === 0) return '<p style="text-align:center; padding:20px;">No service data available yet.</p>';
+            return [...data.services].sort((a,b)=>b.count-a.count).map(service => `<div class="service-item"><div style="font-weight:500;">${service.name}</div><span class="service-count">${service.count} times received</span></div>`).join('');
+        }
+        
+        function generateFeedbackList(data) {
+            if (data.feedback.length === 0) return '<p style="text-align:center; padding:20px;">No feedback received yet.</p>';
+            return [...data.feedback].slice(-5).reverse().map(fb => `<div class="feedback-item ${fb.type}"><div class="feedback-header"><span class="feedback-type ${fb.type}-badge">${fb.type.charAt(0).toUpperCase() + fb.type.slice(1)}</span><div style="color:var(--text-light);">${new Date(fb.date).toLocaleDateString()}</div></div><div>${fb.text}</div><div style="color:var(--text-light); font-size:0.85rem;">Recommendation: ${fb.recommendation?.replace('-',' ') || 'N/A'}</div></div>`).join('');
+        }
+        
+        function deleteAllResponses() {
+            if (!confirm('⚠️ WARNING: This will DELETE ALL client responses! Cannot be undone.')) return;
+            localStorage.setItem('lunasBusinessData', JSON.stringify({ clients:[], services:[], feedback:[], newClientsCount:0, returningClientsCount:0, startDate:new Date().toISOString() }));
+            showDashboard();
+            alert('✅ All client responses have been deleted successfully!');
+        }
+        
+        function exportData() {
+            const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
+            let csv = 'LUNAS Beauty Salon - Client Feedback Data\n\n';
+            csv += 'CLIENT DATA\nClient ID,Type,Phone,Visit Date,Services Received,Overall Rating,Staff Rating,Cleanliness Rating,Wait Time Rating\n';
+            data.clients.forEach(c => csv += `${c.id},${c.type},${c.phone || ''},${c.visitDate},"${c.services.join(', ')}",${c.rating},${c.staffRating || ''},${c.cleanlinessRating || ''},${c.waitTimeRating || ''}\n`);
+            csv += '\nSERVICE DATA\nService,Number of Times Received\n';
+            data.services.forEach(s => csv += `${s.name},${s.count}\n`);
+            csv += '\nFEEDBACK DATA\nType,Feedback,Date,Client ID,Recommendation,Improvement Suggestions\n';
+            data.feedback.forEach(f => csv += `${f.type},"${f.text}",${f.date},${f.id},${f.recommendation || ''},"${f.improvements || ''}"\n`);
+            const blob = new Blob([csv], {type:'text/csv'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'lunas_client_feedback_data.csv';
+            a.click();
+            alert('✅ Data exported successfully!');
+        }
+        
+        // Start everything
         initSupabase().then(() => loadSurveyTool());
     </script>
 </body>
