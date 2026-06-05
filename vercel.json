@@ -8,4 +8,7 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "devCommand": "serve ."
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
 }
