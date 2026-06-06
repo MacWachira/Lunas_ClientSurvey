@@ -23,7 +23,7 @@
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Montserrat', 'Segoe UI', sans-serif; }
-        body { background: linear-gradient(145deg, #f0f4f8 0%, #e8edf2 100%); min-height: 100vh; }
+        body { background: linear-gradient(145deg, #f0f4f8 0%, #e8edf2 100%); min-height: 100vh; position: relative; padding-bottom: 80px; }
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; width: 100%; }
         
         .main-header { background: linear-gradient(135deg, var(--primary-color), #00875a); padding: 20px 0; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); }
@@ -136,8 +136,28 @@
         .shoutout-item { background: linear-gradient(115deg, #fef9e6, #fff4e0); border-radius: 18px; padding: 14px; margin-bottom: 12px; border-left: 4px solid var(--secondary-color); transition: 0.2s; }
         .shoutout-item:hover { transform: translateX(5px); }
         
-        .toast-success { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 14px 24px; border-radius: 50px; display: flex; align-items: center; gap: 12px; font-weight: 600; z-index: 1000; transform: translateX(400px); transition: 0.3s; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-        .toast-success.show { transform: translateX(0); }
+        /* Bottom Toast Message */
+        .bottom-toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            z-index: 1000;
+            transition: 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            white-space: nowrap;
+        }
+        .bottom-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
         
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 2000; flex-direction: column; color: white; }
         .loading-overlay.active { display: flex; }
@@ -146,12 +166,19 @@
         
         .empty-state { text-align: center; padding: 40px; color: var(--text-light); }
         .sync-status { background: #e8f5e8; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; color: var(--primary-color); display: inline-block; }
+        
+        .hear-options { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
+        .hear-option { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f8f9fa; border-radius: 50px; cursor: pointer; border: 2px solid var(--border-color); transition: 0.2s; }
+        .hear-option input { width: auto; margin: 0; padding: 0; }
+        .hear-option.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .hear-option.selected label { color: white; }
+        .hear-option label { margin: 0; cursor: pointer; font-weight: normal; }
     </style>
 </head>
 <body>
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <div>Loading data from cloud...</div>
+        <div>Processing...</div>
     </div>
 
     <div class="main-header">
@@ -169,18 +196,22 @@
         <section id="dashboardSection"></section>
     </div>
 
-    <div id="toastMsg" class="toast-success"><i class="fas fa-check-circle"></i><span>Thank you!</span><i class="fas fa-times-circle" style="margin-left: 12px;"></i></div>
+    <div id="bottomToast" class="bottom-toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Thank you! Your feedback has been recorded!</span>
+    </div>
 
     <script>
-        // Your Google Apps Script URL
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzZJbyX3wCC-gjZ6l8fFvHplSRentnCiKH8oGWw_sRZV78jYQJL9Ed6vWL0znvQcwCE/exec";
         
         const EMPLOYEES = ["Sharon", "Bridgit", "Terry", "Njeri", "Risper", "Cynthia"];
+        const HEAR_OPTIONS = ["TikTok", "Instagram", "Referral", "Walk in", "Other"];
         let isLoggedIn = false;
         
         function showToast(msg) {
-            const toast = document.getElementById('toastMsg');
-            toast.querySelector('span').textContent = msg || '✨ Thank you for your feedback! ✨';
+            const toast = document.getElementById('bottomToast');
+            const msgSpan = document.getElementById('toastMessage');
+            msgSpan.textContent = msg || '✨ Thank you! Your feedback has been recorded! ✨';
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 4000);
         }
@@ -281,9 +312,14 @@
             if (confirm('⚠️ WARNING: This will delete ALL survey records from your Google Sheet. This action cannot be undone. Are you sure?')) {
                 showLoading();
                 try {
-                    const response = await fetch(GOOGLE_SCRIPT_URL + '?action=delete', { method: 'DELETE' });
-                    showToast('🗑️ All records have been deleted from the database.');
-                    loadDashboard(); // Refresh the dashboard
+                    const response = await fetch(GOOGLE_SCRIPT_URL + '?action=delete', { method: 'GET' });
+                    const result = await response.json();
+                    if (result.success) {
+                        showToast('🗑️ All records have been deleted from the database.');
+                        loadDashboard();
+                    } else {
+                        showToast('❌ Delete failed: ' + (result.error || 'Unknown error'));
+                    }
                 } catch (error) {
                     console.error("Delete failed:", error);
                     showToast('❌ Delete failed. Please check console for details.');
@@ -323,6 +359,17 @@
                 `;
             });
             employeeHtml += `</div>`;
+            
+            let hearHtml = `<div class="hear-options" id="hearOptions">`;
+            HEAR_OPTIONS.forEach(opt => {
+                hearHtml += `
+                    <div class="hear-option" data-hear="${opt}">
+                        <input type="radio" name="howDidYouHear" value="${opt}" id="hear_${opt.replace(/\s/g,'')}">
+                        <label for="hear_${opt.replace(/\s/g,'')}">${opt}</label>
+                    </div>
+                `;
+            });
+            hearHtml += `</div>`;
             
             const surveyHTML = `
                 <div class="survey-header"><h1 class="survey-title">✨ Client Satisfaction Survey ✨</h1><p class="survey-subtitle">Thank you for choosing LUNAS. Your feedback helps us improve.</p></div>
@@ -367,6 +414,8 @@
                         <div class="form-group"><label>Your Detailed Feedback <span class="required">*</span></label><textarea id="feedbackText" required></textarea></div>
                         <div class="form-group"><label>Would you recommend us? <span class="required">*</span></label><select id="recommendation" required><option value="">Select</option><option value="yes-definitely">Yes, definitely</option><option value="yes-probably">Yes, probably</option><option value="not-sure">Not sure</option><option value="probably-not">Probably not</option><option value="no">No</option></select></div>
                         <div class="form-group"><label>How can we improve?</label><textarea id="improvementSuggestions"></textarea></div>
+                        <div class="form-group"><label>How did you hear about us? <span class="required">*</span></label>
+                        ${hearHtml}</div>
                     </form>
                     <div class="btn-container"><button class="btn btn-secondary" id="prev4"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="submitSurveyBtn">Submit Survey <i class="fas fa-paper-plane"></i></button></div>
                 </div>
@@ -392,6 +441,7 @@
             document.getElementById('visitDate').value = today;
             document.getElementById('visitDate').max = today;
             
+            // Employee selection
             document.querySelectorAll('.employee-option').forEach(opt => {
                 const radio = opt.querySelector('input[type="radio"]');
                 opt.addEventListener('click', (e) => { 
@@ -404,6 +454,24 @@
                 radio.addEventListener('change', () => { 
                     if(radio.checked) { 
                         document.querySelectorAll('.employee-option').forEach(o => o.classList.remove('selected')); 
+                        opt.classList.add('selected'); 
+                    } 
+                });
+            });
+            
+            // How did you hear selection
+            document.querySelectorAll('.hear-option').forEach(opt => {
+                const radio = opt.querySelector('input[type="radio"]');
+                opt.addEventListener('click', (e) => { 
+                    if(e.target.tagName !== 'INPUT') { 
+                        radio.checked = true; 
+                        document.querySelectorAll('.hear-option').forEach(o => o.classList.remove('selected')); 
+                        opt.classList.add('selected'); 
+                    } 
+                });
+                radio.addEventListener('change', () => { 
+                    if(radio.checked) { 
+                        document.querySelectorAll('.hear-option').forEach(o => o.classList.remove('selected')); 
                         opt.classList.add('selected'); 
                     } 
                 });
@@ -474,6 +542,11 @@
             document.getElementById('prev4').onclick = () => showCard(3);
             
             document.getElementById('submitSurveyBtn').onclick = async () => {
+                const hearSelected = document.querySelector('input[name="howDidYouHear"]:checked');
+                if (!hearSelected) {
+                    alert('Please tell us how you heard about us.');
+                    return;
+                }
                 if (document.getElementById('feedbackForm').checkValidity()) {
                     await submitSurveyData();
                 } else {
@@ -507,6 +580,9 @@
             const customShout = document.getElementById('employeeShoutoutFieldCustom')?.value || '';
             const finalShoutout = customShout ? `${selectedEmployee ? selectedEmployee + ': ' : ''}${customShout}` : (selectedEmployee || '');
             
+            const hearSelected = document.querySelector('input[name="howDidYouHear"]:checked');
+            const howDidYouHear = hearSelected ? hearSelected.value : '';
+            
             const now = new Date();
             const surveyData = {
                 timestamp: now.toISOString(),
@@ -524,7 +600,8 @@
                 feedbackText: document.getElementById('feedbackText').value,
                 recommendation: document.getElementById('recommendation').value,
                 improvements: document.getElementById('improvementSuggestions').value || '',
-                employeeShoutout: finalShoutout || ''
+                employeeShoutout: finalShoutout || '',
+                howDidYouHear: howDidYouHear
             };
             
             await submitToGoogleSheets(surveyData);
@@ -548,6 +625,30 @@
             const returningClients = allSubmissions.filter(s => s.clientType === 'returning').length;
             const totalServices = allSubmissions.reduce((a,s)=>a+(s.services?.split(', ').length||0),0);
             const compliments = allSubmissions.filter(s => s.feedbackType === 'compliment').length;
+            
+            // Employee shoutout counts for bar chart
+            const employeeShoutoutCounts = {};
+            EMPLOYEES.forEach(emp => { employeeShoutoutCounts[emp] = 0; });
+            allSubmissions.forEach(sub => {
+                if(sub.employeeShoutout) {
+                    const shoutout = sub.employeeShoutout;
+                    for (const emp of EMPLOYEES) {
+                        if (shoutout.includes(emp)) {
+                            employeeShoutoutCounts[emp]++;
+                            break;
+                        }
+                    }
+                }
+            });
+            
+            // How did you hear counts
+            const hearCounts = {};
+            HEAR_OPTIONS.forEach(opt => { hearCounts[opt] = 0; });
+            allSubmissions.forEach(sub => {
+                if(sub.howDidYouHear && hearCounts[sub.howDidYouHear] !== undefined) {
+                    hearCounts[sub.howDidYouHear]++;
+                }
+            });
             
             const perServiceMap = new Map();
             allSubmissions.forEach(sub => {
@@ -671,6 +772,21 @@
                     </div>
                 </div>
                 
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h2><i class="fas fa-chart-bar"></i> Employee Shoutouts (Bar Chart)</h2>
+                        <div class="chart-container">
+                            <canvas id="employeeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h2><i class="fas fa-chart-bar"></i> How Did You Hear About Us?</h2>
+                        <div class="chart-container">
+                            <canvas id="hearChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="dashboard-card">
                     <h2><i class="fas fa-star-half-alt"></i> Per-Service Satisfaction Ratings</h2>
                     ${perServiceHtml}
@@ -678,7 +794,7 @@
                 
                 <div class="dashboard-grid">
                     <div class="dashboard-card">
-                        <h2><i class="fas fa-medal"></i> Employee Shoutouts 🌟</h2>
+                        <h2><i class="fas fa-medal"></i> Recent Employee Shoutouts 🌟</h2>
                         ${shoutoutsHtml}
                     </div>
                     <div class="dashboard-card">
@@ -709,6 +825,7 @@
             document.getElementById('deleteAllRecordsBtn').onclick = () => deleteAllRecords();
             
             setTimeout(() => {
+                // Client Demographics Chart
                 if(document.getElementById('clientChart')) {
                     new Chart(document.getElementById('clientChart'), { 
                         type: 'doughnut', 
@@ -729,6 +846,7 @@
                     });
                 }
                 
+                // Most Popular Services Chart
                 const topSvcs = Array.from(serviceCountMap.entries()).sort((a,b) => b[1] - a[1]).slice(0, 6);
                 if(document.getElementById('serviceChart') && topSvcs.length > 0) {
                     new Chart(document.getElementById('serviceChart'), { 
@@ -738,6 +856,56 @@
                             datasets: [{ 
                                 label: 'Times Booked', 
                                 data: topSvcs.map(s => s[1]), 
+                                backgroundColor: '#006850',
+                                borderRadius: 8,
+                                barPercentage: 0.7
+                            }] 
+                        }, 
+                        options: { 
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { position: 'top' } },
+                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } } 
+                        } 
+                    });
+                }
+                
+                // Employee Shoutouts Bar Chart
+                if(document.getElementById('employeeChart')) {
+                    const employeeLabels = Object.keys(employeeShoutoutCounts);
+                    const employeeData = Object.values(employeeShoutoutCounts);
+                    new Chart(document.getElementById('employeeChart'), { 
+                        type: 'bar', 
+                        data: { 
+                            labels: employeeLabels, 
+                            datasets: [{ 
+                                label: 'Number of Shoutouts', 
+                                data: employeeData, 
+                                backgroundColor: '#FBB040',
+                                borderRadius: 8,
+                                barPercentage: 0.7
+                            }] 
+                        }, 
+                        options: { 
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: { legend: { position: 'top' } },
+                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } } 
+                        } 
+                    });
+                }
+                
+                // How Did You Hear Chart
+                if(document.getElementById('hearChart')) {
+                    const hearLabels = Object.keys(hearCounts);
+                    const hearData = Object.values(hearCounts);
+                    new Chart(document.getElementById('hearChart'), { 
+                        type: 'bar', 
+                        data: { 
+                            labels: hearLabels, 
+                            datasets: [{ 
+                                label: 'Number of Clients', 
+                                data: hearData, 
                                 backgroundColor: '#006850',
                                 borderRadius: 8,
                                 barPercentage: 0.7
@@ -762,7 +930,7 @@
                 return;
             }
             
-            let csvRows = [["Timestamp", "Submission Date", "Phone Number", "Visit Date", "Client Type", "Services", "Overall Rating", "Staff Rating", "Cleanliness", "Wait Time", "Feedback Type", "Feedback Text", "Recommendation", "Improvements", "Employee Shoutout"]];
+            let csvRows = [["Timestamp", "Submission Date", "Phone Number", "Visit Date", "Client Type", "Services", "Overall Rating", "Staff Rating", "Cleanliness", "Wait Time", "Feedback Type", "Feedback Text", "Recommendation", "Improvements", "Employee Shoutout", "How Did You Hear"]];
             
             data.forEach(row => {
                 csvRows.push([
@@ -780,7 +948,8 @@
                     row.feedbackText || '',
                     row.recommendation || '',
                     row.improvements || '',
-                    row.employeeShoutout || ''
+                    row.employeeShoutout || '',
+                    row.howDidYouHear || ''
                 ]);
             });
             
