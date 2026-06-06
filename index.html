@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>LUNAS Beauty Salon - Client Survey & Analytics System (Cloud Database)</title>
+    <title>LUNAS Beauty Salon - Client Survey & Analytics System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -37,6 +37,16 @@
         
         #surveySection { display: block; }
         #dashboardSection { display: none; }
+        
+        /* Login Styles */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(5px); }
+        .login-container { background: white; border-radius: 32px; padding: 40px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+        .login-container h2 { color: var(--primary-color); margin-bottom: 10px; }
+        .login-container input { width: 100%; padding: 14px; margin: 12px 0; border: 2px solid var(--border-color); border-radius: 50px; font-size: 1rem; }
+        .login-container input:focus { outline: none; border-color: var(--primary-color); }
+        .login-error { color: var(--danger-color); margin-top: 10px; display: none; font-size: 0.9rem; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 10px 22px; border-radius: 40px; font-weight: 600; cursor: pointer; color: white; transition: 0.2s; }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
         
         .survey-header { text-align: center; margin-bottom: 40px; padding: 25px 20px; background: linear-gradient(135deg, rgba(0,104,80,0.08), rgba(251,176,64,0.08)); border-radius: 28px; }
         .survey-title { font-size: 2rem; color: var(--primary-color); margin-bottom: 15px; }
@@ -92,6 +102,7 @@
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,104,80,0.3); }
         .btn-secondary { background: #f0f0f0; color: var(--dark-color); border: 1px solid var(--border-color); }
         .btn-secondary:hover { background: #e0e0e0; transform: translateY(-2px); }
+        .btn-danger { background: linear-gradient(135deg, var(--danger-color), #c0392b); color: white; }
         
         .thank-you-card { text-align: center; padding: 50px 30px; display: none; }
         .thank-you-card.active { display: block; }
@@ -140,7 +151,7 @@
 <body>
     <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <div>Submitting to Google Sheets...</div>
+        <div>Processing...</div>
     </div>
 
     <div class="main-header">
@@ -161,10 +172,11 @@
     <div id="toastMsg" class="toast-success"><i class="fas fa-check-circle"></i><span>Thank you!</span><i class="fas fa-times-circle" style="margin-left: 12px;"></i></div>
 
     <script>
-        // Google Sheets Configuration - Your existing URL
+        // Google Sheets Configuration
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzY4YUlhufM3vZodPWk_IZDXjLZWM2wzmhAVWH8bkl3iUsLjL-JMd_ZKpUgnUTqSiHB/exec";
         
         const EMPLOYEES = ["Sharon", "Bridgit", "Terry", "Njeri", "Risper", "Cynthia"];
+        let isLoggedIn = false;
         
         function showToast(msg) {
             const toast = document.getElementById('toastMsg');
@@ -175,14 +187,6 @@
         
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
-        
-        // Initialize local storage for data
-        if (!localStorage.getItem('lunasBusinessData')) {
-            localStorage.setItem('lunasBusinessData', JSON.stringify({
-                clients: [], services: [], feedback: [], servicePerceptions: [], employeeShoutouts: [],
-                newClientsCount: 0, returningClientsCount: 0, startDate: new Date().toISOString()
-            }));
-        }
         
         // Navigation
         document.getElementById('navSurvey').onclick = () => {
@@ -198,10 +202,53 @@
             document.getElementById('navDashboard').classList.add('active');
             document.getElementById('surveySection').style.display = 'none';
             document.getElementById('dashboardSection').style.display = 'block';
-            loadDashboard();
+            checkDashboardAccess();
         };
         
-        // Submit to Google Sheets via fetch
+        function checkDashboardAccess() {
+            if (!isLoggedIn) {
+                showLoginModal();
+            } else {
+                loadDashboard();
+            }
+        }
+        
+        function showLoginModal() {
+            const modalHtml = `
+                <div class="login-overlay" id="loginOverlay">
+                    <div class="login-container">
+                        <i class="fas fa-chart-line" style="font-size: 3rem; color: var(--primary-color);"></i>
+                        <h2>Admin Access Required</h2>
+                        <p style="color: var(--text-light); margin-bottom: 20px;">Enter credentials to view analytics</p>
+                        <input type="text" id="loginUsername" placeholder="Username" autocomplete="off">
+                        <input type="password" id="loginPassword" placeholder="Password">
+                        <button class="btn btn-primary" id="loginSubmitBtn" style="width: 100%;">Login to Dashboard</button>
+                        <div class="login-error" id="loginErrorMsg">Invalid username or password</div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            document.getElementById('loginSubmitBtn').onclick = () => {
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                if (username === 'admin' && password === 'lunas@2026') {
+                    isLoggedIn = true;
+                    document.getElementById('loginOverlay').remove();
+                    loadDashboard();
+                } else {
+                    document.getElementById('loginErrorMsg').style.display = 'block';
+                }
+            };
+            
+            // Enter key support
+            document.getElementById('loginPassword').onkeypress = (e) => {
+                if (e.key === 'Enter') document.getElementById('loginSubmitBtn').click();
+            };
+        }
+        
+        // Submit to Google Sheets
         async function submitToGoogleSheets(surveyData) {
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
@@ -217,39 +264,18 @@
             }
         }
         
-        // Save to localStorage
-        function saveToLocalStorage(surveyData, clientId) {
-            const businessData = JSON.parse(localStorage.getItem('lunasBusinessData'));
-            
-            businessData.clients.push({
-                id: clientId, type: surveyData.clientInfo.clientType, phone: surveyData.clientInfo.phone, 
-                visitDate: surveyData.clientInfo.visitDate, services: surveyData.services, 
-                rating: parseInt(surveyData.ratings.overall), 
-                staffRating: surveyData.ratings.staff ? parseInt(surveyData.ratings.staff) : null,
-                cleanlinessRating: surveyData.ratings.cleanliness ? parseInt(surveyData.ratings.cleanliness) : null,
-                waitTimeRating: surveyData.ratings.waitTime ? parseInt(surveyData.ratings.waitTime) : null,
-                employeeShoutout: surveyData.employeeShoutout, 
-                submissionDate: new Date().toISOString()
-            });
-            
-            if (surveyData.clientInfo.clientType === 'new') businessData.newClientsCount++; 
-            else businessData.returningClientsCount++;
-            
-            surveyData.services.forEach(svc => { 
-                const ex = businessData.services.find(s => s.name === svc); 
-                if(ex) ex.count++; 
-                else businessData.services.push({ name: svc, count: 1 }); 
-            });
-            
-            surveyData.servicePerceptions.forEach(sp => businessData.servicePerceptions.push({ clientId, service: sp.service, rating: sp.rating, comment: sp.comment }));
-            if (surveyData.employeeShoutout) businessData.employeeShoutouts.push({ clientId, employee: surveyData.employeeShoutout, date: new Date().toISOString() });
-            businessData.feedback.push({ 
-                id: clientId, type: surveyData.feedback.type, text: surveyData.feedback.text, 
-                recommendation: surveyData.feedback.recommendation, improvements: surveyData.feedback.improvements, 
-                employeeShoutout: surveyData.employeeShoutout, date: new Date().toISOString() 
-            });
-            
-            localStorage.setItem('lunasBusinessData', JSON.stringify(businessData));
+        // Fetch data from Google Sheets (for cross-device sync)
+        async function fetchFromGoogleSheets() {
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=get', { method: 'GET' });
+                if (response.ok) {
+                    const data = await response.json();
+                    return data;
+                }
+            } catch (error) {
+                console.error("Failed to fetch from Google Sheets:", error);
+            }
+            return null;
         }
         
         function loadSurveyTool() {
@@ -260,7 +286,7 @@
                 servicesHtml += `
                     <div class="service-card-enh" data-svc="${svc}">
                         <div class="service-header-enh">
-                            <input type="checkbox" name="service" class="service-check" value="${svc}">
+                            <input type="checkbox" class="service-check" value="${svc}">
                             <span>${svc}</span>
                         </div>
                         <div class="service-rating-enh">
@@ -290,7 +316,7 @@
                 <div class="survey-card active" id="card1">
                     <div class="card-header"><h2><i class="fas fa-user"></i> Contact Information</h2><p>We'd love to stay in touch</p></div>
                     <form id="clientInfoForm">
-                        <div class="form-group"><label>Phone Number</label><input type="tel" id="clientPhone" placeholder="Enter your phone number"></div>
+                        <div class="form-group"><label>Phone Number <span class="required">*</span></label><input type="tel" id="clientPhone" placeholder="Enter your phone number" required></div>
                         <div class="form-group"><label>Date of Visit <span class="required">*</span></label><input type="date" id="visitDate" required></div>
                         <div class="form-group"><label>Is this your first visit to LUNAS? <span class="required">*</span></label><select id="clientType" required><option value="">Select an option</option><option value="new">✨ Yes, first time</option><option value="returning">💎 No, I've been here before</option></select></div>
                     </form>
@@ -351,6 +377,7 @@
             document.getElementById('visitDate').value = today;
             document.getElementById('visitDate').max = today;
             
+            // Fix checkbox visual bug - ensure checkboxes show properly
             document.querySelectorAll('.employee-option').forEach(opt => {
                 const radio = opt.querySelector('input[type="radio"]');
                 opt.addEventListener('click', (e) => { 
@@ -368,25 +395,39 @@
                 });
             });
             
+            // Fix service card selection - checkboxes now properly show checked state
             document.querySelectorAll('.service-card-enh').forEach(card => {
                 const chk = card.querySelector('.service-check');
+                // Click on card toggles checkbox
                 card.addEventListener('click', (e) => { 
-                    if (e.target.tagName !== 'INPUT' && !e.target.classList.contains('star') && !e.target.classList.contains('svc-comment')) { 
-                        chk.checked = !chk.checked; 
-                        if (chk.checked) card.classList.add('selected'); 
-                        else card.classList.remove('selected'); 
-                    } 
+                    // Don't toggle if clicking on star or comment input
+                    if (e.target.classList.contains('star') || e.target.classList.contains('svc-comment') || e.target.tagName === 'INPUT') {
+                        return;
+                    }
+                    chk.checked = !chk.checked; 
+                    if (chk.checked) {
+                        card.classList.add('selected');
+                        // Visual feedback - checkbox becomes visible
+                        chk.style.accentColor = 'var(--primary-color)';
+                    } else {
+                        card.classList.remove('selected');
+                    }
                 });
+                // Ensure checkbox changes reflect visually
                 chk.addEventListener('change', () => { 
-                    if (chk.checked) card.classList.add('selected'); 
-                    else card.classList.remove('selected'); 
+                    if (chk.checked) {
+                        card.classList.add('selected');
+                    } else {
+                        card.classList.remove('selected');
+                    }
                 });
             });
             
             document.querySelectorAll('.stars-enh').forEach(stars => {
                 const starSpans = stars.querySelectorAll('span');
                 starSpans.forEach(star => { 
-                    star.addEventListener('click', function() { 
+                    star.addEventListener('click', function(e) { 
+                        e.stopPropagation();
                         const val = parseInt(this.dataset.star); 
                         starSpans.forEach((s, i) => { 
                             if (i < val) s.classList.add('active'); 
@@ -411,7 +452,18 @@
                 document.getElementById('progressFill').style.width = `${((n-1)/4)*100}%`; 
             };
             
-            document.getElementById('next1').onclick = () => { if(document.getElementById('clientInfoForm').checkValidity()) showCard(2); else document.getElementById('clientInfoForm').reportValidity(); };
+            document.getElementById('next1').onclick = () => { 
+                const phoneInput = document.getElementById('clientPhone');
+                if(document.getElementById('clientInfoForm').checkValidity()) {
+                    if(phoneInput.value && phoneInput.value.trim().length < 8) {
+                        alert('Please enter a valid phone number');
+                        return;
+                    }
+                    showCard(2);
+                } else {
+                    document.getElementById('clientInfoForm').reportValidity();
+                }
+            };
             document.getElementById('next2').onclick = () => { if(document.querySelectorAll('.service-check:checked').length > 0) showCard(3); else alert('Please select at least one service.'); };
             document.getElementById('next3').onclick = () => { if(document.getElementById('overallRating').value) showCard(4); else alert('Please rate the overall service quality.'); };
             document.getElementById('prev2').onclick = () => showCard(1);
@@ -452,8 +504,10 @@
             const customShout = document.getElementById('employeeShoutoutFieldCustom')?.value || '';
             const finalShoutout = customShout ? `${selectedEmployee ? selectedEmployee + ': ' : ''}${customShout}` : (selectedEmployee || '');
             
+            const now = new Date();
             const surveyData = {
-                timestamp: new Date().toISOString(),
+                timestamp: now.toISOString(),
+                submissionDate: now.toLocaleString(),
                 clientPhone: document.getElementById('clientPhone').value || 'Not provided',
                 visitDate: document.getElementById('visitDate').value,
                 clientType: document.getElementById('clientType').value,
@@ -470,17 +524,6 @@
                 employeeShoutout: finalShoutout || ''
             };
             
-            const clientId = 'LUN' + Date.now().toString().slice(-8);
-            
-            saveToLocalStorage({
-                clientInfo: { phone: surveyData.clientPhone, visitDate: surveyData.visitDate, clientType: surveyData.clientType },
-                services: surveyData.services.split(', '),
-                ratings: { overall: surveyData.overallRating, staff: surveyData.staffRating, cleanliness: surveyData.cleanlinessRating, waitTime: surveyData.waitTimeRating },
-                feedback: { type: surveyData.feedbackType, text: surveyData.feedbackText, recommendation: surveyData.recommendation, improvements: surveyData.improvements },
-                employeeShoutout: surveyData.employeeShoutout,
-                servicePerceptions: serviceRatings
-            }, clientId);
-            
             await submitToGoogleSheets(surveyData);
             
             hideLoading();
@@ -488,21 +531,45 @@
             document.getElementById('thankYouCard').classList.add('active');
             document.getElementById('card4').classList.remove('active');
             document.getElementById('progressFill').style.width = '100%';
-            showToast('✨ Thank you! Your feedback has been recorded! ✨');
+            showToast('✨ Thank you! Your feedback has been recorded in the cloud! ✨');
         }
         
-        function loadDashboard() {
-            const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
-            const totalClients = data.clients.length;
-            const avgRating = totalClients > 0 ? (data.clients.reduce((a,b)=>a+(b.rating||0),0)/totalClients).toFixed(1) : '0.0';
-            const totalServices = data.clients.reduce((a,c)=>a+(c.services?.length||0),0);
+        async function loadDashboard() {
+            showLoading();
             
-            // Calculate per-service average ratings
+            // Try to fetch from Google Sheets first for cross-device sync
+            let allSubmissions = [];
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL + '?action=getdata', { method: 'GET' });
+                if (response.ok) {
+                    const data = await response.json();
+                    allSubmissions = data.data || [];
+                }
+            } catch (error) {
+                console.log("Using local data fallback");
+            }
+            
+            // Process data from Google Sheets if available
+            const totalClients = allSubmissions.length;
+            const avgRating = totalClients > 0 ? (allSubmissions.reduce((a,b)=>a+(parseInt(b.overallRating)||0),0)/totalClients).toFixed(1) : '0.0';
+            const newClients = allSubmissions.filter(s => s.clientType === 'new').length;
+            const returningClients = allSubmissions.filter(s => s.clientType === 'returning').length;
+            const totalServices = allSubmissions.reduce((a,s)=>a+(s.services?.split(', ').length||0),0);
+            const compliments = allSubmissions.filter(s => s.feedbackType === 'compliment').length;
+            
+            // Calculate per-service ratings
             const perServiceMap = new Map();
-            (data.servicePerceptions || []).forEach(p => { 
-                if(p.rating > 0) {
-                    if(!perServiceMap.has(p.service)) perServiceMap.set(p.service, []); 
-                    perServiceMap.get(p.service).push(p.rating); 
+            allSubmissions.forEach(sub => {
+                if(sub.serviceRatings) {
+                    try {
+                        const ratings = JSON.parse(sub.serviceRatings);
+                        ratings.forEach(r => {
+                            if(r.rating > 0) {
+                                if(!perServiceMap.has(r.service)) perServiceMap.set(r.service, []);
+                                perServiceMap.get(r.service).push(r.rating);
+                            }
+                        });
+                    } catch(e) {}
                 }
             });
             
@@ -524,29 +591,31 @@
                 perServiceHtml = '<div class="empty-state">No service ratings yet. Submit surveys to see data!</div>';
             }
             
-            // Recent shoutouts
+            // Shoutouts
             let shoutoutsHtml = '';
-            if(data.employeeShoutouts.length > 0) {
-                shoutoutsHtml = data.employeeShoutouts.slice(-6).reverse().map(s => `
+            const shoutouts = allSubmissions.filter(s => s.employeeShoutout && s.employeeShoutout.trim()).slice(-6).reverse();
+            if(shoutouts.length > 0) {
+                shoutoutsHtml = shoutouts.map(s => `
                     <div class="shoutout-item">
-                        <i class="fas fa-user-check" style="color: var(--secondary-color);"></i> "${s.employee}"
-                        <br><small style="color: var(--text-light);">📅 ${new Date(s.date).toLocaleDateString()}</small>
+                        <i class="fas fa-user-check" style="color: var(--secondary-color);"></i> "${s.employeeShoutout.substring(0, 80)}"
+                        <br><small style="color: var(--text-light);">📅 ${s.submissionDate || new Date(s.timestamp).toLocaleDateString()}</small>
                     </div>
                 `).join('');
             } else {
                 shoutoutsHtml = '<div class="empty-state">No shoutouts yet. Be the first to recognize an amazing employee!</div>';
             }
             
-            // Recent feedback
+            // Feedback
             let feedbackHtml = '';
-            if(data.feedback.length > 0) {
-                feedbackHtml = data.feedback.slice(-5).reverse().map(fb => {
-                    const borderColor = fb.type === 'compliment' ? '#2ecc71' : (fb.type === 'suggestion' ? '#f39c12' : '#e74c3c');
+            const feedbacks = allSubmissions.filter(s => s.feedbackText && s.feedbackText.trim()).slice(-5).reverse();
+            if(feedbacks.length > 0) {
+                feedbackHtml = feedbacks.map(fb => {
+                    const borderColor = fb.feedbackType === 'compliment' ? '#2ecc71' : (fb.feedbackType === 'suggestion' ? '#f39c12' : '#e74c3c');
                     return `
                         <div class="feedback-item" style="border-left-color: ${borderColor};">
-                            <strong><i class="fas fa-tag"></i> ${fb.type.toUpperCase()}</strong>
-                            <br>${fb.text.substring(0, 120)}${fb.text.length > 120 ? '...' : ''}
-                            <br><small style="color: var(--text-light);">👍 ${fb.recommendation?.replace(/-/g, ' ') || 'No recommendation'}</small>
+                            <strong><i class="fas fa-tag"></i> ${(fb.feedbackType || 'feedback').toUpperCase()}</strong>
+                            <br>${fb.feedbackText.substring(0, 120)}${fb.feedbackText.length > 120 ? '...' : ''}
+                            <br><small>📞 ${fb.clientPhone || 'No phone'} | 👍 ${fb.recommendation?.replace(/-/g, ' ') || 'No recommendation'}</small>
                         </div>
                     `;
                 }).join('');
@@ -554,20 +623,33 @@
                 feedbackHtml = '<div class="empty-state">No feedback yet. Submit surveys to see feedback!</div>';
             }
             
+            // Service popularity chart
+            const serviceCountMap = new Map();
+            allSubmissions.forEach(sub => {
+                if(sub.services) {
+                    sub.services.split(', ').forEach(svc => {
+                        serviceCountMap.set(svc, (serviceCountMap.get(svc) || 0) + 1);
+                    });
+                }
+            });
+            
             document.getElementById('dashboardSection').innerHTML = `
                 <div class="dashboard-header">
                     <div>
                         <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
-                        <p>LUNAS Salon Client Feedback & Insights</p>
+                        <p>LUNAS Salon Client Feedback & Insights (Cloud-Synced)</p>
                     </div>
-                    <button class="refresh-btn" id="refreshDashboardBtn"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="refresh-btn" id="refreshDashboardBtn"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                        <button class="logout-btn" id="logoutDashboardBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
                 </div>
                 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number">${totalClients}</div>
-                        <div class="stat-label">Total Clients Surveyed</div>
-                        <small>📊 ${data.newClientsCount} new · ${data.returningClientsCount} returning</small>
+                        <div class="stat-label">Total Responses</div>
+                        <small>📊 ${newClients} new · ${returningClients} returning</small>
                     </div>
                     <div class="stat-card">
                         <div class="stat-number">${avgRating}</div>
@@ -580,9 +662,9 @@
                         <small>across all clients</small>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number">${data.feedback.length}</div>
+                        <div class="stat-number">${allSubmissions.length}</div>
                         <div class="stat-label">Total Feedbacks</div>
-                        <small>${data.feedback.filter(f=>f.type==='compliment').length} compliments</small>
+                        <small>${compliments} compliments</small>
                     </div>
                 </div>
                 
@@ -620,41 +702,31 @@
                 <div class="dashboard-card">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
                         <button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-download"></i> Export CSV</button>
-                        <button class="btn btn-danger" id="deleteAllBtn"><i class="fas fa-trash-alt"></i> Delete All Data</button>
                     </div>
                 </div>
                 
                 <div style="text-align: center; padding: 20px; color: var(--text-light);">
-                    <p><i class="fas fa-cloud-upload-alt"></i> Data syncs to Google Sheets | Last updated: ${new Date().toLocaleString()}</p>
+                    <p><i class="fas fa-cloud-upload-alt"></i> Data synced from Google Sheets | Last updated: ${new Date().toLocaleString()}</p>
                 </div>
             `;
             
-            // Attach event listeners
             document.getElementById('refreshDashboardBtn').onclick = () => loadDashboard();
-            document.getElementById('exportCsvBtn').onclick = () => exportToCSV();
-            document.getElementById('deleteAllBtn').onclick = () => {
-                if(confirm('⚠️ WARNING: This will delete ALL survey data from this browser. This cannot be undone. Continue?')) {
-                    localStorage.setItem('lunasBusinessData', JSON.stringify({
-                        clients: [], services: [], feedback: [], servicePerceptions: [], employeeShoutouts: [],
-                        newClientsCount: 0, returningClientsCount: 0, startDate: new Date().toISOString()
-                    }));
-                    showToast('🗑️ All data has been deleted.');
-                    loadDashboard();
-                }
+            document.getElementById('logoutDashboardBtn').onclick = () => {
+                isLoggedIn = false;
+                document.getElementById('dashboardSection').innerHTML = '';
+                document.getElementById('navSurvey').click();
             };
+            document.getElementById('exportCsvBtn').onclick = () => exportToCSV(allSubmissions);
             
             // Render charts
             setTimeout(() => {
-                const newC = data.clients.filter(c => c.type === 'new').length;
-                const retC = data.clients.filter(c => c.type === 'returning').length;
-                
                 if(document.getElementById('clientChart')) {
                     new Chart(document.getElementById('clientChart'), { 
                         type: 'doughnut', 
                         data: { 
                             labels: ['New Clients', 'Returning Clients'], 
                             datasets: [{ 
-                                data: [newC, retC], 
+                                data: [newClients, returningClients], 
                                 backgroundColor: ['#006850', '#FBB040'],
                                 borderWidth: 0,
                                 hoverOffset: 10
@@ -663,22 +735,20 @@
                         options: { 
                             responsive: true, 
                             maintainAspectRatio: true,
-                            plugins: {
-                                legend: { position: 'bottom', labels: { font: { size: 12 } } }
-                            }
+                            plugins: { legend: { position: 'bottom' } }
                         } 
                     });
                 }
                 
-                const topSvcs = [...data.services].sort((a,b) => b.count - a.count).slice(0, 6);
+                const topSvcs = Array.from(serviceCountMap.entries()).sort((a,b) => b[1] - a[1]).slice(0, 6);
                 if(document.getElementById('serviceChart') && topSvcs.length > 0) {
                     new Chart(document.getElementById('serviceChart'), { 
                         type: 'bar', 
                         data: { 
-                            labels: topSvcs.map(s => s.name.length > 15 ? s.name.substring(0,12)+'...' : s.name), 
+                            labels: topSvcs.map(s => s[0].length > 15 ? s[0].substring(0,12)+'...' : s[0]), 
                             datasets: [{ 
                                 label: 'Times Booked', 
-                                data: topSvcs.map(s => s.count), 
+                                data: topSvcs.map(s => s[1]), 
                                 backgroundColor: '#006850',
                                 borderRadius: 8,
                                 barPercentage: 0.7
@@ -687,42 +757,41 @@
                         options: { 
                             responsive: true,
                             maintainAspectRatio: true,
-                            plugins: {
-                                legend: { position: 'top' }
-                            },
-                            scales: { 
-                                y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } 
-                            } 
+                            plugins: { legend: { position: 'top' } },
+                            scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } } 
                         } 
                     });
-                } else if(document.getElementById('serviceChart')) {
-                    document.getElementById('serviceChart').parentElement.innerHTML = '<div class="empty-state">No service data yet. Submit surveys to see charts!</div>';
                 }
             }, 100);
+            
+            hideLoading();
         }
         
-        function exportToCSV() {
-            const data = JSON.parse(localStorage.getItem('lunasBusinessData'));
-            if(data.clients.length === 0) {
+        function exportToCSV(data) {
+            if(data.length === 0) {
                 alert('No data to export!');
                 return;
             }
             
-            let csvRows = [["Client ID", "Type", "Phone", "Visit Date", "Services", "Overall Rating", "Staff Rating", "Cleanliness", "Wait Time", "Employee Shoutout", "Submission Date"]];
+            let csvRows = [["Timestamp", "Submission Date", "Phone Number", "Visit Date", "Client Type", "Services", "Overall Rating", "Staff Rating", "Cleanliness", "Wait Time", "Feedback Type", "Feedback Text", "Recommendation", "Improvements", "Employee Shoutout"]];
             
-            data.clients.forEach(client => {
+            data.forEach(row => {
                 csvRows.push([
-                    client.id,
-                    client.type,
-                    client.phone,
-                    client.visitDate,
-                    (client.services || []).join("; "),
-                    client.rating || '',
-                    client.staffRating || '',
-                    client.cleanlinessRating || '',
-                    client.waitTimeRating || '',
-                    client.employeeShoutout || '',
-                    client.submissionDate
+                    row.timestamp || '',
+                    row.submissionDate || '',
+                    row.clientPhone || '',
+                    row.visitDate || '',
+                    row.clientType || '',
+                    row.services || '',
+                    row.overallRating || '',
+                    row.staffRating || '',
+                    row.cleanlinessRating || '',
+                    row.waitTimeRating || '',
+                    row.feedbackType || '',
+                    row.feedbackText || '',
+                    row.recommendation || '',
+                    row.improvements || '',
+                    row.employeeShoutout || ''
                 ]);
             });
             
