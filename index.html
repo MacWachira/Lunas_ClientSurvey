@@ -213,7 +213,7 @@
 
     <script>
         // Your Google Apps Script URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxOkEg_ncFtluL4vccKPPD0AKWsE80S350n2t-LnmzTptbaSw3SMSFe_Nid_B8rQ/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0jU5iJa0zPm7bE0lcaP1Ym96LcY9upgJtsVz5ti91vLZxfqdvDL7t_xR2G6twSD99/exec";
         
         const EMPLOYEES = ["Sharon", "Bridgit", "Terry", "Njeri", "Risper", "Cynthia"];
         const HEAR_OPTIONS = ["TikTok", "Instagram", "Referral", "Walk in", "Other"];
@@ -452,7 +452,6 @@
             document.getElementById('visitDate').value = today;
             document.getElementById('visitDate').max = today;
             
-            // Employee selection
             document.querySelectorAll('.employee-option').forEach(opt => {
                 const radio = opt.querySelector('input[type="radio"]');
                 opt.addEventListener('click', (e) => { 
@@ -470,7 +469,7 @@
                 });
             });
             
-            // How did you hear selection with Other text box
+            // How did you hear selection
             const hearRadios = document.querySelectorAll('input[name="howDidYouHear"]');
             const otherTextBox = document.getElementById('otherHearText');
             const otherInput = document.getElementById('otherHearValue');
@@ -479,11 +478,9 @@
                 radio.addEventListener('change', () => {
                     if (radio.value === 'Other') {
                         otherTextBox.classList.add('show');
-                        otherInput.setAttribute('required', 'required');
                     } else {
                         otherTextBox.classList.remove('show');
-                        otherInput.removeAttribute('required');
-                        otherInput.value = '';
+                        if (otherInput) otherInput.value = '';
                     }
                 });
             });
@@ -499,6 +496,7 @@
                             otherTextBox.classList.add('show');
                         } else {
                             otherTextBox.classList.remove('show');
+                            if (otherInput) otherInput.value = '';
                         }
                     } 
                 });
@@ -569,13 +567,13 @@
             document.getElementById('prev4').onclick = () => showCard(3);
             
             document.getElementById('submitSurveyBtn').onclick = async () => {
-                let hearSelected = document.querySelector('input[name="howDidYouHear"]:checked');
+                const hearSelected = document.querySelector('input[name="howDidYouHear"]:checked');
                 if (!hearSelected) {
                     alert('Please tell us how you heard about us.');
                     return;
                 }
                 if (hearSelected.value === 'Other') {
-                    const otherValue = document.getElementById('otherHearValue').value.trim();
+                    const otherValue = document.getElementById('otherHearValue')?.value.trim();
                     if (!otherValue) {
                         alert('Please specify how you heard about us.');
                         return;
