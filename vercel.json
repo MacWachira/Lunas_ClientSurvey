@@ -5,10 +5,5 @@
       "destination": "/index.html"
     }
   ],
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "devCommand": "serve ."
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
+  "outputDirectory": "."
 }
