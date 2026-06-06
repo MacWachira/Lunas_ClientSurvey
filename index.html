@@ -183,6 +183,13 @@
         .other-text-input { margin-top: 12px; display: none; }
         .other-text-input input { width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 20px; font-size: 0.9rem; }
         .other-text-input.show { display: block; }
+        
+        /* Rating bar styles */
+        .rating-bars { margin-top: 10px; }
+        .rating-bar-item { margin-bottom: 15px; }
+        .rating-bar-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; }
+        .rating-bar-bg { background: #e9ecef; border-radius: 10px; overflow: hidden; height: 25px; }
+        .rating-bar-fill { background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); height: 100%; border-radius: 10px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-size: 0.75rem; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -213,7 +220,7 @@
 
     <script>
         // Your Google Apps Script URL
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCPSDTQqxPG0g5gQ9iACykzUjZJJ-KAIk2G7OPb7hsnXyd10xeW7l6Oxq0o6kPpf30/exec";
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby0jU5iJa0zPm7bE0lcaP1Ym96LcY9upgJtsVz5ti91vLZxfqdvDL7t_xR2G6twSD99/exec";
         
         const EMPLOYEES = ["Sharon", "Bridgit", "Terry", "Njeri", "Risper", "Cynthia"];
         const HEAR_OPTIONS = ["TikTok", "Instagram", "Referral", "Walk in", "Other"];
@@ -469,7 +476,6 @@
                 });
             });
             
-            // How did you hear selection
             const hearRadios = document.querySelectorAll('input[name="howDidYouHear"]');
             const otherTextBox = document.getElementById('otherHearText');
             const otherInput = document.getElementById('otherHearValue');
@@ -662,6 +668,60 @@
             const totalServices = allSubmissions.reduce((a,s)=>a+(s.services?.split(', ').length||0),0);
             const compliments = allSubmissions.filter(s => s.feedbackType === 'compliment').length;
             
+            // Calculate average ratings for Service Quality section
+            let totalOverall = 0, totalStaff = 0, totalCleanliness = 0, totalWait = 0;
+            let countOverall = 0, countStaff = 0, countCleanliness = 0, countWait = 0;
+            
+            allSubmissions.forEach(sub => {
+                if (sub.overallRating && sub.overallRating !== 'Not rated') {
+                    totalOverall += parseInt(sub.overallRating) || 0;
+                    countOverall++;
+                }
+                if (sub.staffRating && sub.staffRating !== 'Not rated') {
+                    totalStaff += parseInt(sub.staffRating) || 0;
+                    countStaff++;
+                }
+                if (sub.cleanlinessRating && sub.cleanlinessRating !== 'Not rated') {
+                    totalCleanliness += parseInt(sub.cleanlinessRating) || 0;
+                    countCleanliness++;
+                }
+                if (sub.waitTimeRating && sub.waitTimeRating !== 'Not rated') {
+                    totalWait += parseInt(sub.waitTimeRating) || 0;
+                    countWait++;
+                }
+            });
+            
+            const avgOverall = countOverall > 0 ? (totalOverall / countOverall).toFixed(1) : '0.0';
+            const avgStaff = countStaff > 0 ? (totalStaff / countStaff).toFixed(1) : '0.0';
+            const avgCleanliness = countCleanliness > 0 ? (totalCleanliness / countCleanliness).toFixed(1) : '0.0';
+            const avgWait = countWait > 0 ? (totalWait / countWait).toFixed(1) : '0.0';
+            
+            // Rating distribution for bar charts
+            const ratingLabels = ['Poor (1)', 'Fair (2)', 'Good (3)', 'Very Good (4)', 'Excellent (5)'];
+            const overallDist = [0,0,0,0,0];
+            const staffDist = [0,0,0,0,0];
+            const cleanlinessDist = [0,0,0,0,0];
+            const waitDist = [0,0,0,0,0];
+            
+            allSubmissions.forEach(sub => {
+                if (sub.overallRating && sub.overallRating !== 'Not rated') {
+                    const val = parseInt(sub.overallRating);
+                    if (val >= 1 && val <= 5) overallDist[val-1]++;
+                }
+                if (sub.staffRating && sub.staffRating !== 'Not rated') {
+                    const val = parseInt(sub.staffRating);
+                    if (val >= 1 && val <= 5) staffDist[val-1]++;
+                }
+                if (sub.cleanlinessRating && sub.cleanlinessRating !== 'Not rated') {
+                    const val = parseInt(sub.cleanlinessRating);
+                    if (val >= 1 && val <= 5) cleanlinessDist[val-1]++;
+                }
+                if (sub.waitTimeRating && sub.waitTimeRating !== 'Not rated') {
+                    const val = parseInt(sub.waitTimeRating);
+                    if (val >= 1 && val <= 5) waitDist[val-1]++;
+                }
+            });
+            
             const employeeShoutoutCounts = {};
             EMPLOYEES.forEach(emp => { employeeShoutoutCounts[emp] = 0; });
             allSubmissions.forEach(sub => {
@@ -788,6 +848,81 @@
                         <div class="stat-number">${allSubmissions.length}</div>
                         <div class="stat-label">Total Feedbacks</div>
                         <small style="color: var(--text-light);">${compliments} compliments</small>
+                    </div>
+                </div>
+                
+                <!-- SERVICE QUALITY SECTION - NEW CHARTS -->
+                <div class="dashboard-card">
+                    <h2><i class="fas fa-star" style="color: var(--warning-color);"></i> Service Quality Ratings</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${avgOverall}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Overall Quality</div>
+                            <div class="rating-bars" style="margin-top: 10px;">
+                                ${[5,4,3,2,1].map(r => {
+                                    const count = overallDist[r-1];
+                                    const percent = totalClients > 0 ? (count / totalClients * 100).toFixed(1) : 0;
+                                    const starText = r === 5 ? '★★★★★' : r === 4 ? '★★★★☆' : r === 3 ? '★★★☆☆' : r === 2 ? '★★☆☆☆' : '★☆☆☆☆';
+                                    return `
+                                        <div class="rating-bar-item">
+                                            <div class="rating-bar-label"><span>${starText}</span><span>${count} (${percent}%)</span></div>
+                                            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: ${percent}%;"></div></div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${avgStaff}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Staff Friendliness</div>
+                            <div class="rating-bars" style="margin-top: 10px;">
+                                ${[5,4,3,2,1].map(r => {
+                                    const count = staffDist[r-1];
+                                    const percent = totalClients > 0 ? (count / totalClients * 100).toFixed(1) : 0;
+                                    const starText = r === 5 ? '★★★★★' : r === 4 ? '★★★★☆' : r === 3 ? '★★★☆☆' : r === 2 ? '★★☆☆☆' : '★☆☆☆☆';
+                                    return `
+                                        <div class="rating-bar-item">
+                                            <div class="rating-bar-label"><span>${starText}</span><span>${count} (${percent}%)</span></div>
+                                            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: ${percent}%;"></div></div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${avgCleanliness}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Cleanliness</div>
+                            <div class="rating-bars" style="margin-top: 10px;">
+                                ${[5,4,3,2,1].map(r => {
+                                    const count = cleanlinessDist[r-1];
+                                    const percent = totalClients > 0 ? (count / totalClients * 100).toFixed(1) : 0;
+                                    const starText = r === 5 ? '★★★★★' : r === 4 ? '★★★★☆' : r === 3 ? '★★★☆☆' : r === 2 ? '★★☆☆☆' : '★☆☆☆☆';
+                                    return `
+                                        <div class="rating-bar-item">
+                                            <div class="rating-bar-label"><span>${starText}</span><span>${count} (${percent}%)</span></div>
+                                            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: ${percent}%;"></div></div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--primary-color);">${avgWait}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-light);">Wait Time</div>
+                            <div class="rating-bars" style="margin-top: 10px;">
+                                ${[5,4,3,2,1].map(r => {
+                                    const count = waitDist[r-1];
+                                    const percent = totalClients > 0 ? (count / totalClients * 100).toFixed(1) : 0;
+                                    const starText = r === 5 ? '★★★★★' : r === 4 ? '★★★★☆' : r === 3 ? '★★★☆☆' : r === 2 ? '★★☆☆☆' : '★☆☆☆☆';
+                                    return `
+                                        <div class="rating-bar-item">
+                                            <div class="rating-bar-label"><span>${starText}</span><span>${count} (${percent}%)</span></div>
+                                            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width: ${percent}%;"></div></div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
