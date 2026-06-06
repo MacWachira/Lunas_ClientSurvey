@@ -188,7 +188,6 @@
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
         
-        // Navigation
         document.getElementById('navSurvey').onclick = () => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('navSurvey').classList.add('active');
@@ -247,7 +246,6 @@
             };
         }
         
-        // Submit to Google Sheets
         async function submitToGoogleSheets(surveyData) {
             try {
                 await fetch(GOOGLE_SCRIPT_URL, {
@@ -263,7 +261,6 @@
             }
         }
         
-        // Fetch ALL data from Google Sheets
         async function fetchAllSubmissions() {
             try {
                 const url = GOOGLE_SCRIPT_URL + '?t=' + Date.now();
@@ -405,7 +402,6 @@
                     chk.checked = !chk.checked; 
                     if (chk.checked) {
                         card.classList.add('selected');
-                        chk.style.accentColor = 'var(--primary-color)';
                     } else {
                         card.classList.remove('selected');
                     }
