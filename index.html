@@ -101,6 +101,7 @@
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0,104,80,0.3); }
         .btn-secondary { background: #f0f0f0; color: var(--dark-color); border: 1px solid var(--border-color); }
         .btn-secondary:hover { background: #e0e0e0; transform: translateY(-2px); }
+        .btn-danger { background: linear-gradient(135deg, var(--danger-color), #c0392b); color: white; }
         
         .thank-you-card { text-align: center; padding: 50px 30px; display: none; }
         .thank-you-card.active { display: block; }
@@ -276,6 +277,22 @@
             return [];
         }
         
+        async function deleteAllRecords() {
+            if (confirm('⚠️ WARNING: This will delete ALL survey records from your Google Sheet. This action cannot be undone. Are you sure?')) {
+                showLoading();
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL + '?action=delete', { method: 'DELETE' });
+                    showToast('🗑️ All records have been deleted from the database.');
+                    loadDashboard(); // Refresh the dashboard
+                } catch (error) {
+                    console.error("Delete failed:", error);
+                    showToast('❌ Delete failed. Please check console for details.');
+                } finally {
+                    hideLoading();
+                }
+            }
+        }
+        
         function loadSurveyTool() {
             let servicesHtml = `<div class="services-enhanced">`;
             const SERVICES = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock","Flat Ironing","Other"];
@@ -305,7 +322,7 @@
                     </div>
                 `;
             });
-            employeeHtml += `</div><div class="shoutout-note"><i class="fas fa-star" style="color: var(--secondary-color);"></i> <span>Select an exceptional team member who made your visit memorable</span></div>`;
+            employeeHtml += `</div>`;
             
             const surveyHTML = `
                 <div class="survey-header"><h1 class="survey-title">✨ Client Satisfaction Survey ✨</h1><p class="survey-subtitle">Thank you for choosing LUNAS. Your feedback helps us improve.</p></div>
@@ -673,6 +690,7 @@
                 <div class="dashboard-card">
                     <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
                         <button class="btn btn-primary" id="exportCsvBtn"><i class="fas fa-download"></i> Export CSV</button>
+                        <button class="btn btn-danger" id="deleteAllRecordsBtn"><i class="fas fa-trash-alt"></i> Delete All Records</button>
                     </div>
                 </div>
                 
@@ -688,6 +706,7 @@
                 document.getElementById('navSurvey').click();
             };
             document.getElementById('exportCsvBtn').onclick = () => exportToCSV(allSubmissions);
+            document.getElementById('deleteAllRecordsBtn').onclick = () => deleteAllRecords();
             
             setTimeout(() => {
                 if(document.getElementById('clientChart')) {
