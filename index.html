@@ -98,6 +98,25 @@
         .rating-option { flex: 1; min-width: 90px; text-align: center; padding: 12px 8px; background: #f8f9fa; border-radius: 50px; cursor: pointer; border: 2px solid var(--border-color); font-weight: 500; transition: 0.2s; }
         .rating-option.selected { background: var(--primary-color); color: white; border-color: var(--primary-color); }
         .rating-option i { font-size: 1.3rem; margin-bottom: 4px; display: block; }
+
+        .service-category { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin: 12px 0 0; color: var(--primary-color); font-size: 1.05rem; }
+        .service-category::after { content: ''; height: 1px; background: var(--border-color); flex: 1; }
+        .quality-grid { display: grid; gap: 20px; }
+        .quality-question { background: linear-gradient(145deg, #fbfdfc, #f5f8f7); border: 1px solid var(--border-color); border-radius: 24px; padding: 20px; }
+        .quality-question label { display: flex; align-items: center; gap: 9px; }
+        .quality-options { display: grid; grid-template-columns: repeat(5, minmax(90px, 1fr)); gap: 10px; }
+        .quality-option { border: 2px solid var(--border-color); background: white; border-radius: 18px; padding: 12px 8px; color: var(--text-dark); cursor: pointer; font-weight: 600; transition: 0.2s; text-align: center; }
+        .quality-option i { display: block; color: var(--secondary-color); font-size: 1.25rem; margin-bottom: 5px; }
+        .quality-option:hover { border-color: var(--secondary-color); transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.07); }
+        .quality-option.selected { color: white; border-color: var(--primary-color); background: linear-gradient(135deg, var(--primary-color), var(--gradient-end)); box-shadow: 0 7px 18px rgba(0,104,80,0.2); }
+        .quality-option.selected i { color: var(--secondary-color); }
+        .loyalty-banner { background: linear-gradient(135deg, #fff8e8, #eef9f5); border: 2px solid rgba(251,176,64,0.45); border-radius: 24px; padding: 20px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start; }
+        .loyalty-banner > i { color: var(--secondary-color); font-size: 2rem; }
+        .loyalty-banner h3 { color: var(--primary-color); margin-bottom: 5px; }
+        .consent-row { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px; background: #f8faf9; border-radius: 16px; }
+        .consent-row input { width: 20px; height: 20px; margin-top: 1px; accent-color: var(--primary-color); }
+        .consent-row label { margin: 0; font-weight: 500; }
+        .points-earned { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary-color), var(--gradient-end)); color: white; padding: 14px 22px; border-radius: 50px; margin: 20px 0 4px; font-weight: 700; }
         
         .btn-container { display: flex; justify-content: space-between; margin-top: 40px; gap: 20px; flex-wrap: wrap; }
         .btn { padding: 14px 28px; border: none; border-radius: 50px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; flex: 1; min-width: 140px; }
@@ -131,7 +150,8 @@
         
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 30px; margin-bottom: 35px; }
         @media (max-width: 1000px) { .dashboard-grid { grid-template-columns: 1fr; } .survey-card { padding: 24px 20px; } .logo { font-size: 2rem; } }
-        @media (max-width: 550px) { .stats-grid { grid-template-columns: 1fr; } .employee-choice-grid { grid-template-columns: 1fr; } .btn-container { flex-direction: column; } .btn { width: 100%; } }
+        @media (max-width: 700px) { .quality-options { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 550px) { .stats-grid { grid-template-columns: 1fr; } .employee-choice-grid { grid-template-columns: 1fr; } .btn-container { flex-direction: column; } .btn { width: 100%; } .services-enhanced { grid-template-columns: 1fr; } .loyalty-banner { flex-direction: column; } }
         
         .dashboard-card { background: white; border-radius: 28px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); transition: all 0.3s; border: 1px solid rgba(0,0,0,0.05); }
         .dashboard-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
@@ -222,7 +242,53 @@
         // Your Google Apps Script URL
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw2HPBOs8iAvr75cQ68aJiXQ2tVaw4UtGmOWjLWGfuPCs1b9nLx-Uzc0sZZZlT_Oa5q/exec";
         
-        const EMPLOYEES = ["Sharon", "Bridgit", "Terry", "Njeri", "Risper", "Cynthia"];
+        const EMPLOYEES = ["Cynthia", "Njeri", "Sharon", "Terry"];
+        const SERVICES = [
+            { name: "Gel", section: "Nails" },
+            { name: "Builder Overlay", section: "Nails" },
+            { name: "Tips Builder", section: "Nails" },
+            { name: "Tips Gumgel", section: "Nails" },
+            { name: "Sculpting", section: "Nails" },
+            { name: "Soak off", section: "Nails" },
+            { name: "Repairs", section: "Nails" },
+            { name: "Brows Shaping", section: "Nails" },
+            { name: "Manicure", section: "Nails" },
+            { name: "Tips", section: "Nails" },
+            { name: "Pedicure", section: "Nails" },
+            { name: "Gumgel Overlay", section: "Nails" },
+            { name: "Piercing", section: "Nails" },
+            { name: "Gumgel Sculpting", section: "Nails" },
+            { name: "Undoing", section: "Salon" },
+            { name: "Detangle", section: "Salon" },
+            { name: "Relaxing hair (Perming)", section: "Salon" },
+            { name: "Wig Laundry & Styling", section: "Salon" },
+            { name: "Wig Uninstallation", section: "Salon" },
+            { name: "Wig Styling", section: "Salon" },
+            { name: "Locs Retouch (Wax)", section: "Salon" },
+            { name: "Locs Retouch (Crochet)", section: "Salon" },
+            { name: "Sisterlocs Retie", section: "Salon" },
+            { name: "Locs Wash", section: "Salon" },
+            { name: "Wash & Blow", section: "Salon" },
+            { name: "Brows Shaping", section: "Salon" },
+            { name: "Hair Styling", section: "Salon" },
+            { name: "Roller set", section: "Salon" },
+            { name: "Deep Treatment (Dryer)", section: "Salon" },
+            { name: "Strip Lash Installation", section: "Salon" },
+            { name: "Gel Styling", section: "Salon" },
+            { name: "Split Ends Trimming", section: "Salon" },
+            { name: "Edges Styling", section: "Salon" },
+            { name: "Makeup", section: "Salon" },
+            { name: "Twist Outs", section: "Salon" },
+            { name: "Sew In", section: "Salon" },
+            { name: "Track and Sew", section: "Salon" },
+            { name: "Braiding", section: "Salon" },
+            { name: "Wig Installation", section: "Salon" },
+            { name: "Lash Installation", section: "Salon" },
+            { name: "Lash Removal", section: "Salon" },
+            { name: "Lash Refill", section: "Salon" },
+            { name: "Facial", section: "Salon" }
+        ];
+        const LOYALTY_POINTS_PER_VISIT = 10;
         const HEAR_OPTIONS = ["TikTok", "Instagram", "Referral", "Walk in", "Other"];
         let isLoggedIn = false;
         
@@ -236,6 +302,49 @@
         
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
+
+        function normalizePhone(value) {
+            let digits = String(value || '').replace(/\D/g, '');
+            if (digits.startsWith('0') && digits.length === 10) digits = `254${digits.slice(1)}`;
+            if (digits.startsWith('7') && digits.length === 9) digits = `254${digits}`;
+            return digits;
+        }
+
+        function normalizeVisitDate(value) {
+            const raw = String(value || '');
+            if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+            const date = new Date(raw);
+            if (Number.isNaN(date.getTime())) return raw;
+            const parts = new Intl.DateTimeFormat('en-GB', {
+                timeZone: 'Africa/Nairobi', year: 'numeric', month: '2-digit', day: '2-digit'
+            }).formatToParts(date).reduce((result, part) => ({ ...result, [part.type]: part.value }), {});
+            return `${parts.year}-${parts.month}-${parts.day}`;
+        }
+
+        function qualityButtons(fieldId) {
+            const options = [
+                { value: 1, label: 'Poor', icon: 'fa-face-frown' },
+                { value: 2, label: 'Fair', icon: 'fa-face-meh' },
+                { value: 3, label: 'Good', icon: 'fa-face-smile' },
+                { value: 4, label: 'Very Good', icon: 'fa-face-smile-beam' },
+                { value: 5, label: 'Excellent', icon: 'fa-face-grin-stars' }
+            ];
+            return `<div class="quality-options" data-field="${fieldId}">${options.map(option => `<button type="button" class="quality-option" data-value="${option.value}"><i class="fas ${option.icon}"></i>${option.label}</button>`).join('')}</div><input type="hidden" id="${fieldId}">`;
+        }
+
+        function calculateLoyalty(phone, visitDate, submissions) {
+            const normalizedPhone = normalizePhone(phone);
+            if (normalizedPhone.length < 12) return { eligible: false, earned: 0, balance: 0, duplicate: false };
+
+            const customerVisits = new Set(
+                submissions
+                    .filter(item => normalizePhone(item.clientPhone) === normalizedPhone && item.visitDate)
+                    .map(item => normalizeVisitDate(item.visitDate))
+            );
+            const duplicate = customerVisits.has(normalizeVisitDate(visitDate));
+            const earned = duplicate ? 0 : LOYALTY_POINTS_PER_VISIT;
+            return { eligible: true, earned, balance: (customerVisits.size * LOYALTY_POINTS_PER_VISIT) + earned, duplicate };
+        }
         
         document.getElementById('navSurvey').onclick = () => {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -349,23 +458,24 @@
         
         function loadSurveyTool() {
             let servicesHtml = `<div class="services-enhanced">`;
-            const SERVICES = ["Gel Polish","Tips","Builder Gel","Gumgel Overlay","Gumgel Sculpting","Pedicure","Manicure","Piercing","Wig Installation","Wig Laundry","Eyelash Extension","Waxing","Facial","Massage","Braiding","Wash and Blow","Brow Shaping","Dreadlock","Flat Ironing","Other"];
-            
-            SERVICES.forEach(svc => {
-                servicesHtml += `
-                    <div class="service-card-enh" data-svc="${svc}">
+            ["Nails", "Salon"].forEach(section => {
+                servicesHtml += `<h3 class="service-category"><i class="fas ${section === 'Nails' ? 'fa-hand-sparkles' : 'fa-scissors'}"></i>${section} Services</h3>`;
+                SERVICES.filter(service => service.section === section).forEach(service => {
+                    servicesHtml += `
+                    <div class="service-card-enh" data-svc="${service.name}" data-section="${service.section}">
                         <div class="service-header-enh">
-                            <input type="checkbox" class="service-check" value="${svc}">
-                            <span>${svc}</span>
+                            <input type="checkbox" class="service-check" value="${service.name}">
+                            <span>${service.name}</span>
                         </div>
                         <div class="service-rating-enh">
                             <div class="stars-enh">${[1,2,3,4,5].map(s => `<span data-star="${s}">★</span>`).join('')}</div>
-                            <div class="comment-enh"><input type="text" class="svc-comment" placeholder="Your experience with ${svc}..."></div>
+                            <div class="comment-enh"><input type="text" class="svc-comment" placeholder="Your experience with ${service.name}..."></div>
                         </div>
                     </div>
                 `;
+                });
             });
-            servicesHtml += `</div><div class="form-group"><label for="otherServiceField">If "Other", please specify:</label><input type="text" id="otherServiceField" placeholder="Describe the service"></div>`;
+            servicesHtml += `</div>`;
             
             let employeeHtml = `<div class="employee-choice-grid" id="employeeChoiceGrid">`;
             EMPLOYEES.forEach(emp => {
@@ -390,15 +500,18 @@
             hearHtml += `</div><div class="other-text-input" id="otherHearText"><input type="text" id="otherHearValue" placeholder="Please specify how you heard about us..."></div>`;
             
             const surveyHTML = `
-                <div class="survey-header"><h1 class="survey-title">✨ Client Satisfaction Survey ✨</h1><p class="survey-subtitle">Thank you for choosing LUNAS. Your feedback helps us improve.</p></div>
+                <div class="survey-header"><h1 class="survey-title">✨ Your LUNAS Experience ✨</h1><p class="survey-subtitle">Share your glow-up experience, celebrate your stylist, and earn loyalty points for your visit.</p></div>
                 <div class="progress-container"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div>
                 
                 <div class="survey-card active" id="card1">
-                    <div class="card-header"><h2><i class="fas fa-user"></i> Contact Information</h2><p>We'd love to stay in touch (optional)</p></div>
+                    <div class="card-header"><h2><i class="fas fa-gem"></i> Welcome to LUNAS Rewards</h2><p>Your feedback makes every visit better</p></div>
+                    <div class="loyalty-banner"><i class="fas fa-gift"></i><div><h3>Earn ${LOYALTY_POINTS_PER_VISIT} points today</h3><p>Enter your phone number and complete this survey after your service. One reward is available per customer, per visit date.</p></div></div>
                     <form id="clientInfoForm">
-                        <div class="form-group"><label>Phone Number <span style="color: var(--text-light);">(Optional)</span></label><input type="tel" id="clientPhone" placeholder="Enter your phone number (optional)"></div>
+                        <div class="form-group"><label>Your Name <span style="color: var(--text-light);">(Optional)</span></label><input type="text" id="clientName" placeholder="What should we call you?"></div>
+                        <div class="form-group"><label>Phone Number <span style="color: var(--text-light);">(Required for points)</span></label><input type="tel" id="clientPhone" inputmode="tel" placeholder="e.g. 0712 345 678"></div>
                         <div class="form-group"><label>Date of Visit <span class="required">*</span></label><input type="date" id="visitDate" required></div>
                         <div class="form-group"><label>Is this your first visit to LUNAS? <span class="required">*</span></label><select id="clientType" required><option value="">Select an option</option><option value="new">✨ Yes, first time</option><option value="returning">💎 No, I've been here before</option></select></div>
+                        <div class="consent-row"><input type="checkbox" id="marketingConsent"><label for="marketingConsent">Yes, send me occasional LUNAS offers, reward updates, and appointment reminders by SMS or WhatsApp.</label></div>
                     </form>
                     <div class="btn-container"><button class="btn btn-secondary" disabled>Previous</button><button class="btn btn-primary" id="next1">Next <i class="fas fa-arrow-right"></i></button></div>
                 </div>
@@ -415,12 +528,14 @@
                 </div>
                 
                 <div class="survey-card" id="card3">
-                    <div class="card-header"><h2><i class="fas fa-star"></i> Service Quality</h2><p>How would you rate the quality of services you received?</p></div>
+                    <div class="card-header"><h2><i class="fas fa-wand-magic-sparkles"></i> Service Quality</h2><p>Tap the option that best matches your salon experience.</p></div>
                     <form id="qualityForm">
                         <div class="form-group"><label>Overall Service Quality <span class="required">*</span></label><div class="rating-container" id="ratingContainer"><div class="rating-option poor" data-value="1"><i class="fas fa-frown"></i><div>Poor</div></div><div class="rating-option fair" data-value="2"><i class="fas fa-meh"></i><div>Fair</div></div><div class="rating-option good" data-value="3"><i class="fas fa-smile"></i><div>Good</div></div><div class="rating-option very-good" data-value="4"><i class="fas fa-smile-beam"></i><div>Very Good</div></div><div class="rating-option excellent" data-value="5"><i class="fas fa-grin-stars"></i><div>Excellent</div></div></div><input type="hidden" id="overallRating" required></div>
-                        <div class="form-group"><label>Staff Friendliness & Professionalism</label><select id="staffRating"><option value="">Select rating</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
-                        <div class="form-group"><label>Cleanliness</label><select id="cleanlinessRating"><option value="">Select rating</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
-                        <div class="form-group"><label>Wait Time</label><select id="waitTimeRating"><option value="">Select rating</option><option value="5">Excellent</option><option value="4">Very Good</option><option value="3">Good</option><option value="2">Fair</option><option value="1">Poor</option></select></div>
+                        <div class="quality-grid">
+                            <div class="quality-question"><label><i class="fas fa-people-group"></i> Staff Friendliness & Professionalism</label>${qualityButtons('staffRating')}</div>
+                            <div class="quality-question"><label><i class="fas fa-sparkles"></i> Salon Cleanliness & Ambiance</label>${qualityButtons('cleanlinessRating')}</div>
+                            <div class="quality-question"><label><i class="fas fa-clock"></i> Wait Time & Appointment Flow</label>${qualityButtons('waitTimeRating')}</div>
+                        </div>
                     </form>
                     <div class="btn-container"><button class="btn btn-secondary" id="prev3"><i class="fas fa-arrow-left"></i> Previous</button><button class="btn btn-primary" id="next3">Next <i class="fas fa-arrow-right"></i></button></div>
                 </div>
@@ -441,7 +556,9 @@
                 <div class="survey-card thank-you-card" id="thankYouCard">
                     <div class="thank-you-icon"><i class="fas fa-heart"></i></div>
                     <h2>Thank You!</h2>
-                    <p>Your feedback has been successfully submitted to our cloud database!</p>
+                    <p>Your feedback has been successfully submitted!</p>
+                    <div class="points-earned" id="loyaltyResult"><i class="fas fa-gift"></i><span>Thank you for helping LUNAS shine.</span></div>
+                    <p id="loyaltyNote" style="color: var(--text-light); margin-top: 10px;"></p>
                     <div class="social-icons">
                         <a href="https://www.instagram.com/lunas_parlour" target="_blank" class="social-icon"><div class="social-circle instagram"><i class="fab fa-instagram"></i></div><div>Instagram</div></a>
                         <a href="https://www.tiktok.com/@lunasbeautyparlour" target="_blank" class="social-icon"><div class="social-circle tiktok"><i class="fab fa-tiktok"></i></div><div>TikTok</div></a>
@@ -551,6 +668,16 @@
                     this.classList.add('selected'); 
                 });
             });
+
+            document.querySelectorAll('.quality-options').forEach(group => {
+                group.querySelectorAll('.quality-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        document.getElementById(group.dataset.field).value = option.dataset.value;
+                        group.querySelectorAll('.quality-option').forEach(item => item.classList.remove('selected'));
+                        option.classList.add('selected');
+                    });
+                });
+            });
             
             let current = 1;
             const showCard = (n) => { 
@@ -561,6 +688,11 @@
             
             document.getElementById('next1').onclick = () => { 
                 if(document.getElementById('clientInfoForm').checkValidity()) {
+                    const enteredPhone = document.getElementById('clientPhone').value.trim();
+                    if (enteredPhone && normalizePhone(enteredPhone).length < 12) {
+                        alert('Please enter a valid phone number, or leave it blank if you do not want loyalty points.');
+                        return;
+                    }
                     showCard(2);
                 } else {
                     document.getElementById('clientInfoForm').reportValidity();
@@ -603,14 +735,8 @@
                 const card = cb.closest('.service-card-enh');
                 const starCount = card.querySelectorAll('.stars-enh span.active').length;
                 const comment = card.querySelector('.svc-comment')?.value || '';
-                serviceRatings.push({ service: svc, rating: starCount, comment: comment });
+                serviceRatings.push({ service: svc, section: card.dataset.section, rating: starCount, comment: comment });
             });
-            
-            const otherVal = document.getElementById('otherServiceField')?.value;
-            if (otherVal && serviceRatings.some(s => s.service === 'Other')) {
-                const idx = serviceRatings.findIndex(s => s.service === 'Other');
-                if (idx !== -1) serviceRatings[idx].service = otherVal;
-            }
             
             let selectedEmployee = '';
             const selectedRadio = document.querySelector('input[name="employeeShoutoutRadio"]:checked');
@@ -626,11 +752,17 @@
             }
             
             const now = new Date();
+            const clientPhone = document.getElementById('clientPhone').value.trim();
+            const visitDate = document.getElementById('visitDate').value;
+            const previousSubmissions = clientPhone ? await fetchAllSubmissions() : [];
+            const loyalty = calculateLoyalty(clientPhone, visitDate, previousSubmissions);
             const surveyData = {
                 timestamp: now.toISOString(),
                 submissionDate: now.toLocaleString(),
-                clientPhone: document.getElementById('clientPhone').value || '',
-                visitDate: document.getElementById('visitDate').value,
+                clientName: document.getElementById('clientName').value.trim(),
+                clientPhone: clientPhone,
+                normalizedPhone: normalizePhone(clientPhone),
+                visitDate: visitDate,
                 clientType: document.getElementById('clientType').value,
                 services: serviceRatings.map(s => s.service).join(', '),
                 serviceRatings: JSON.stringify(serviceRatings),
@@ -643,7 +775,11 @@
                 recommendation: document.getElementById('recommendation').value,
                 improvements: document.getElementById('improvementSuggestions').value || '',
                 employeeShoutout: finalShoutout || '',
-                howDidYouHear: howDidYouHear
+                howDidYouHear: howDidYouHear,
+                marketingConsent: document.getElementById('marketingConsent').checked ? 'Yes' : 'No',
+                loyaltyPointsEarned: loyalty.earned,
+                loyaltyBalance: loyalty.balance,
+                loyaltyStatus: !loyalty.eligible ? 'Phone not provided' : loyalty.duplicate ? 'Already awarded for this visit date' : 'Points awarded'
             };
             
             await submitToGoogleSheets(surveyData);
@@ -653,7 +789,19 @@
             document.getElementById('thankYouCard').classList.add('active');
             document.getElementById('card4').classList.remove('active');
             document.getElementById('progressFill').style.width = '100%';
-            showToast('✨ Thank you! Your feedback has been recorded in the cloud! ✨');
+            const loyaltyResult = document.getElementById('loyaltyResult');
+            const loyaltyNote = document.getElementById('loyaltyNote');
+            if (!loyalty.eligible) {
+                loyaltyResult.innerHTML = '<i class="fas fa-heart"></i><span>Feedback received — thank you!</span>';
+                loyaltyNote.textContent = 'Add your phone number on your next visit to start earning rewards.';
+            } else if (loyalty.duplicate) {
+                loyaltyResult.innerHTML = `<i class="fas fa-gem"></i><span>Your balance is ${loyalty.balance} points</span>`;
+                loyaltyNote.textContent = 'Points for this visit date were already awarded. Your feedback is still appreciated.';
+            } else {
+                loyaltyResult.innerHTML = `<i class="fas fa-gift"></i><span>+${loyalty.earned} points · ${loyalty.balance} total</span>`;
+                loyaltyNote.textContent = 'Keep sharing feedback after each visit to grow your LUNAS Rewards balance.';
+            }
+            showToast(loyalty.earned ? `✨ Feedback saved — you earned ${loyalty.earned} loyalty points!` : '✨ Thank you! Your feedback has been recorded!');
         }
         
         async function loadDashboard() {
@@ -667,6 +815,11 @@
             const returningClients = allSubmissions.filter(s => s.clientType === 'returning').length;
             const totalServices = allSubmissions.reduce((a,s)=>a+(s.services?.split(', ').length||0),0);
             const compliments = allSubmissions.filter(s => s.feedbackType === 'compliment').length;
+            const rewardedVisits = new Set(allSubmissions
+                .filter(item => normalizePhone(item.clientPhone) && item.visitDate)
+                .map(item => `${normalizePhone(item.clientPhone)}:${normalizeVisitDate(item.visitDate)}`));
+            const loyaltyPointsAwarded = rewardedVisits.size * LOYALTY_POINTS_PER_VISIT;
+            const marketingMembers = new Set(allSubmissions.filter(item => item.marketingConsent === 'Yes' && normalizePhone(item.clientPhone)).map(item => normalizePhone(item.clientPhone))).size;
             
             // Calculate average ratings for Service Quality section
             let totalOverall = 0, totalStaff = 0, totalCleanliness = 0, totalWait = 0;
@@ -848,6 +1001,16 @@
                         <div class="stat-number">${allSubmissions.length}</div>
                         <div class="stat-label">Total Feedbacks</div>
                         <small style="color: var(--text-light);">${compliments} compliments</small>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${loyaltyPointsAwarded}</div>
+                        <div class="stat-label">Loyalty Points Awarded</div>
+                        <small style="color: var(--text-light);">across verified survey visits</small>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${marketingMembers}</div>
+                        <div class="stat-label">Marketing Members</div>
+                        <small style="color: var(--text-light);">customers who opted in</small>
                     </div>
                 </div>
                 
@@ -1104,12 +1267,13 @@
                 return;
             }
             
-            let csvRows = [["Timestamp", "Submission Date", "Phone Number", "Visit Date", "Client Type", "Services", "Overall Rating", "Staff Rating", "Cleanliness", "Wait Time", "Feedback Type", "Feedback Text", "Recommendation", "Improvements", "Employee Shoutout", "How Did You Hear"]];
+            let csvRows = [["Timestamp", "Submission Date", "Client Name", "Phone Number", "Visit Date", "Client Type", "Services", "Overall Rating", "Staff Rating", "Cleanliness", "Wait Time", "Feedback Type", "Feedback Text", "Recommendation", "Improvements", "Employee Shoutout", "How Did You Hear", "Marketing Consent", "Points Earned", "Loyalty Balance", "Loyalty Status"]];
             
             data.forEach(row => {
                 csvRows.push([
                     row.timestamp || '',
                     row.submissionDate || '',
+                    row.clientName || '',
                     row.clientPhone || '',
                     row.visitDate || '',
                     row.clientType || '',
@@ -1123,7 +1287,11 @@
                     row.recommendation || '',
                     row.improvements || '',
                     row.employeeShoutout || '',
-                    row.howDidYouHear || ''
+                    row.howDidYouHear || '',
+                    row.marketingConsent || 'No',
+                    row.loyaltyPointsEarned || 0,
+                    row.loyaltyBalance || 0,
+                    row.loyaltyStatus || ''
                 ]);
             });
             
