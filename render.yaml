@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: lunas-client-survey-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci
+    startCommand: npm run migrate && npm start
+    healthCheckPath: /health
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lunas-client-survey-db
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "false"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: TRUST_PROXY
+        value: "1"
+
+databases:
+  - name: lunas-client-survey-db
+    plan: free
+    region: frankfurt
+    databaseName: lunas
+    user: lunas_api

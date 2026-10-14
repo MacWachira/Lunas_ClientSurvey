@@ -1,0 +1,28 @@
+{
+  "name": "lunas-client-survey-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Secure survey and loyalty API for LUNAS Beauty Salon",
+  "main": "src/server.js",
+  "engines": { "node": ">=20 <25" },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "import:legacy": "node scripts/import-google-sheets.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
+    "pino-http": "^11.0.0",
+    "zod": "^4.1.12"
+  }
+}
